@@ -7,6 +7,7 @@ use Illuminate\Http\Request;
 use App\Models\Lesson;
 use App\Models\Course;
 use App\Http\Requests\StoreLessonRequest;
+use App\Http\Requests\UpdateLesson;
 
 class LessonController extends Controller
 {
@@ -63,4 +64,21 @@ class LessonController extends Controller
 
         return new LessonResource($lesson);
     }
+
+    public function update(UpdateLesson $request, Lesson $lesson){
+   
+      $this->authorize('update',$lesson);
+      $lesson->update($request->validated());
+      
+      return new LessonResource($lesson);
+
+    }
+   
+    public function destroy(Request $request, Lesson $lesson){
+        $this->authorize('delete',$lesson);
+        $lesson->delete();
+        return response()->json([ 'message' => 'Course deleted successfully']);
+    }
+
+    
 }
