@@ -4,6 +4,7 @@ namespace App\Policies;
 
 use App\Models\Lesson;
 use App\Models\User;
+use App\Models\Course;
 use Illuminate\Auth\Access\Response;
 
 class LessonPolicy
@@ -27,9 +28,10 @@ class LessonPolicy
     /**
      * Determine whether the user can create models.
      */
-    public function create(User $user): bool
+    public function create(User $user, Course $course): bool
     {
-        return false;
+        return $user->role === 'teacher'
+            && $course->teacher_id === $user->id;
     }
 
     /**
@@ -63,4 +65,6 @@ class LessonPolicy
     {
         return false;
     }
+
+    
 }

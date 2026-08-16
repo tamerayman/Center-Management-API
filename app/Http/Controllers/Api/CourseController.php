@@ -111,4 +111,14 @@ class CourseController extends Controller
             'message' => 'Course left successfully.'
         ]);
     }
+
+     public function students(Course $course)
+     {
+
+        $students = $course->students()->get();
+
+        return response()->json([
+            'students' => $students
+        ]);
+     }
 }

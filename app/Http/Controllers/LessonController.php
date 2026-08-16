@@ -24,20 +24,7 @@ class LessonController extends Controller
         return LessonResource::collection($lessons);
     }
 
-    //  public function mylessonsDetails(Request $request,  Lesson $lesson)
-    //  {
-    //     if ($request->user()->role==='teacher'){
-    //         $lesson=$request->user()->courses()->with(['lessons','course'])->findOrFail($lesson->id);
-    //     }
-    //     elseif ($request->user()->role==='student'){
-    //         $lesson=$request->user()->enrolledCourses()->with(['lessons','course'])->findOrFail($lesson->id);
-    //     }
-    //     else{
-    //         return response()->json(['message' => 'Unauthorized'], 403);
-    //     }
 
-    //     return new LessonResource($lesson);
-    //  }
     public function mylessonsDetails(Request $request, Lesson $lesson)
     {
         if ($request->user()->role === 'teacher') {
@@ -59,6 +46,7 @@ class LessonController extends Controller
     
     public function store(StoreLessonRequest $request, Course $course)
     {
+          $this->authorize('create', [Lesson::class, $course]); 
 
         $lesson = $course->lessons()->create($request->validated());
 
@@ -77,8 +65,19 @@ class LessonController extends Controller
     public function destroy(Request $request, Lesson $lesson){
         $this->authorize('delete',$lesson);
         $lesson->delete();
-        return response()->json([ 'message' => 'Course deleted successfully']);
+        return response()->json([ 'message' => 'Lesson deleted successfully']);
     }
 
+    
+    public function student(Lesson $lesson){
+
+    $students = $lesson->course->students()->get();
+    return response()->json([
+        'students' => $students
+    ]);
+
+
+
+    }
     
 }
