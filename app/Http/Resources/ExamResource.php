@@ -4,7 +4,7 @@ namespace App\Http\Resources;
 
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
-
+use App\Http\Resources\CourseResource;
 class ExamResource extends JsonResource
 {
     /**
@@ -21,10 +21,10 @@ class ExamResource extends JsonResource
             'description' => $this->description,
             'start_time' => $this->start_time,
             'end_time' => $this->end_time,
-            'duration' => $this->duration,
+            'duration' => $this->duration  . ' minutes',
             'total_marks' => $this->total_marks,
 
-            "course" => new CourseResource($this->whenLoaded('course')),
+            "course" => $this->whenLoaded('course', fn() => new CourseResource($this->course)) ,
 
 
         ];

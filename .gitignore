@@ -22,3 +22,22 @@
 Homestead.json
 Homestead.yaml
 Thumbs.db
+desktop.ini
+
+# Uploaded files (runtime data)
+/cloudFiles
+
+# Local tool files
+/.playwright-mcp
+/.claude
+.dbml-sync.json
+
+# Screenshot images (not source code)
+dashboard.png
+login-page.png
+
+# Storage logs
+/storage/logs/*.log
+
+# Corrupted/misplaced folder
+/C*frontend

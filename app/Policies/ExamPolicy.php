@@ -32,8 +32,9 @@ class ExamPolicy
 {
     return  $user->role === 'teacher' && $course->teacher_id === $user->id;
     //or
-    //لو فوق امتحان بدل كورس
+    //الكود اللي تحت ده غلط عشان المتحان لسه معتعملش اصلا فا لزما يبقي كورس
     // return $user->role === 'teacher' && $user->id===$exam->course->teacher_id;
+    
 }
 
     /**
@@ -66,5 +67,10 @@ class ExamPolicy
     public function forceDelete(User $user, Exam $exam): bool
     {
         return false;
+    }
+
+    public function viewResults(User $user, Exam $exam): bool
+    {
+        return $user->role === 'teacher' && $exam->course->teacher_id === $user->id;
     }
 }

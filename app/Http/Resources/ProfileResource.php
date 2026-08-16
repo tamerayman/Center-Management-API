@@ -13,13 +13,33 @@ class ProfileResource extends JsonResource
      * @return array<string, mixed>
      */
     public function toArray(Request $request): array
-    { 
-         return [
-        'id'=>$this->id,
-        'name'=>$this->name,
-        'email'=>$this->email,
-        'role'=>$this->role,
-        
+    {
+        return [
+
+            'user' => [
+                'id' => $this->user->id,
+                'name' => $this->user->name,
+                'email' => $this->user->email,
+                 'role'  => $this->user->role,
+            ],
+
+
+             'profile' => [
+            'phone' => $this->phone,
+            'bio' => $this->bio,
+            'date_of_birth' => $this->date_of_birth,
+            'gender' => $this->gender,
+            'country' => $this->country,
+            'city' => $this->city,
+
+            'avatar' => $this->avatar_path
+                ? asset('storage/'.$this->avatar_path)
+                : asset('images/default-avatar.jpg'),
+
+            'linkedin' => $this->linkedin_url,
+            'github' => $this->github_url,
+            'website' => $this->website_url,
+        ],
         ];
     }
 }

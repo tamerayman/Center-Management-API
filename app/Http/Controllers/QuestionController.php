@@ -7,69 +7,74 @@ use App\Models\Exam;
 use App\Models\Question;
 use Illuminate\Http\Request;
 use App\Http\Resources\QuestionResource;
+
 class QuestionController extends Controller
 {
-    
-      public function index(Request $request, Exam $exam){
 
-        $user =$request->user();
-        if($user->role==='teacher'){
-        
-          $questions=question::whereHas('exam',function($q)use($user,$exam){
-            $q->where('id',$exam->id)
-              ->whereHas('course',function($q)use($user){
-                $q->where('teacher_id',$user->id);
-              });
-          })->get();
-        }
-        elseif($user->role==='student'){
-          $questions=question::whereHas('exam',function($q)use($user,$exam){
-            $q->where('id',$exam->id)
-              ->whereHas('course.students',function($q)use($user){
-                $q->where('student_id',$user->id);
-              });
-          })->get();
-        }
-        else{
-          return response()->json(['message'=>'Unauthorized'],403);
-        }
-         $questions = $exam->questions()->get();
-         return response()->json([
-            'exam_title' => $questions,
-            'questions' => QuestionResource::collection($questions),
-         ]);
-      
-      }
-   public function store(StoreQuestionRequest $request, Exam $exam)
-    {
-        $this->authorize('create', [Question::class, $exam]);
+  public function index(Request $request, Exam $exam)
+  { 
+    $this->authorize('viewQuestions', [Question::class, $exam]);
 
-        $question = $exam->questions()->create($request->validated());
+      $questions = $exam->questions()->get();
 
-        return new QuestionResource($question);
-    }
+    //or
+    // $user = $request->user();
+    // if ($user->role === 'teacher') {
 
-    public function update(StoreQuestionRequest $request, Question $question)
-    {
-        $this->authorize('update', $question);
+    //   $questions = Question::where('exam_id', $exam->id)
+    //     ->whereHas('exam.course', function ($q) use ($user) {
+    //       $q->where('teacher_id', $user->id);
+    //     })->get();
 
-        $question->update($request->validated());
+      //or 
+      //  $request->user()->courses()->with(['exams.questions'])->get()->pluck('exams')->flatten()
+      //  ->pluck('questions')->flatten();
+      //-----------------------------------------------------------
+    // } elseif ($user->role === 'student') {
+    //   $questions = question::where('exam_id', $exam->id)
+    //     ->whereHas('exam.course.students', function ($q) use ($user) {
+    //       $q->where('student_id', $user->id);
+    //     })->get();
+      //or
+      //$user->enrollcourses()->with(['exams.questions'])->get()->pluck('exams')->flatten()
+      //->pluck('questions')->flatten();
+    // } else {
+    //   return response()->json(['message' => 'Unauthorized'], 403);
+    // }
 
-        return new QuestionResource($question);
-    }
+    return response()->json([
+      'exam' => [
+        'id' => $exam->id,
+        'title' => $exam->title,
+      ],
+      'questions' => QuestionResource::collection($questions),
+    ]);
+  }
+  public function store(StoreQuestionRequest $request, Exam $exam)
+  {
+    $this->authorize('create', [Question::class, $exam]);
 
+    $question = $exam->questions()->create($request->validated());
 
-    public function destroy(Question $question)
-    {
-        $this->authorize('delete', $question);
+    return new QuestionResource($question);
+  }
 
-        $question->delete();
+  public function update(StoreQuestionRequest $request, Question $question)
+  {
+    $this->authorize('update', $question);
 
-        return response()->json(['message' => 'Question deleted successfully']);
-    }
+    $question->update($request->validated());
 
+    return new QuestionResource($question);
+  }
 
 
+  public function destroy(Question $question)
+  {
+    $this->authorize('delete', $question);
 
+    $question->delete();
 
+    return response()->json(['message' => 'Question deleted successfully']);
+  }
 }

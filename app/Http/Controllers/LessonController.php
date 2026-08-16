@@ -6,6 +6,7 @@ use App\Http\Resources\LessonResource;
 use Illuminate\Http\Request;
 use App\Models\Lesson;
 use App\Models\Course;
+use App\Models\Notification;
 use App\Http\Requests\StoreLessonRequest;
 use App\Http\Requests\UpdateLesson;
 
@@ -26,7 +27,7 @@ class LessonController extends Controller
 
 
     public function mylessonsDetails(Request $request, Lesson $lesson)
-    {
+    {  /// ممكن تعملها ب policy  وده الاحسن
         if ($request->user()->role === 'teacher') {
             $lesson = Lesson::with(['course', 'course.teacher'])
                 ->whereHas('course', function ($q) use ($request) {
@@ -49,6 +50,15 @@ class LessonController extends Controller
         $this->authorize('create', [Lesson::class, $course]);
 
         $lesson = $course->lessons()->create($request->validated());
+        //Create a notification for all students enrolled in the course
+        foreach ($course->students as $student) {
+
+            Notification::create([
+                'user_id' => $student->id,
+                'title' => 'New Lesson',
+                'message' => "A new lesson '{$lesson->title}' has been added to {$course->title}.",
+            ]);
+        }
 
         return new LessonResource($lesson);
     }

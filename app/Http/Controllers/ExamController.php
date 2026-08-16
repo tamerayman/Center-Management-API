@@ -6,6 +6,7 @@ use App\Http\Requests\StoreExamRequest;
 use Illuminate\Http\Request;
 use App\Models\Exam;
 use App\Models\Course;
+use App\Models\Notification;
 use App\Http\Resources\ExamResource;
 
 
@@ -55,6 +56,17 @@ class ExamController extends Controller
         $this->authorize('create', [Exam::class, $course]);
 
         $exam = $course->exams()->create($request->validated());
+        //Create a notification for all students enrolled in the course
+
+
+        foreach ($course->students as $student) {
+            Notification::create([
+                'user_id' => $student->id,
+                'title' => 'New Exam',
+                'message' => "A new exam '{$exam->title}' has been added to {$course->title}.",
+            ]);
+        }
+
         return new ExamResource($exam);
     }
 

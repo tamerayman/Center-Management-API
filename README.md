@@ -40,21 +40,30 @@ A scalable and secure RESTful API built with Laravel for managing educational ce
 
 Center Management API is a backend system built with **Laravel** to simplify the management of educational centers.
 
-The project follows RESTful API architecture and provides authentication, authorization, course management, lesson management, online exams, attendance tracking, notifications, and many additional educational services.
+The project follows RESTful API architecture and provides authentication, authorization, course management, lesson management, online exams, attendance tracking, student profiles, lesson materials, dashboard statistics, notifications, and many additional educational services.
 
 The goal of the project is to provide a scalable backend that can power Web, Mobile, or Desktop applications.
 
 ---
 
-# ✨ Current Features
+# ✨ Features
 
 | Module | Description |
 |----------|-------------|
 | 🔐 Authentication | Register, Login, Logout using Laravel Sanctum |
 | 👤 User Roles | Admin, Teacher and Student roles |
+| 👤 User Profiles | Profile management with avatar upload |
 | 📚 Courses | Create, Update, Delete and Browse Courses |
 | 🎓 Enrollment | Students can Join and Leave Courses |
-| 📖 Lessons | Lesson Management |
+| 📖 Lessons | Lesson management with course association |
+| 📎 Lesson Materials | File uploads (PDF, images) for lessons |
+| 📝 Online Exams | Create exams with questions, time limits, and auto-grading |
+| ❓ Questions | Multiple choice questions with correct answer tracking |
+| 📊 Student Results | Automatic scoring and result tracking |
+| ✍️ Student Answers | Answer submission and validation |
+| 📅 Attendance | Attendance tracking per lesson |
+| 🔔 Notifications | System notifications for users |
+| 📈 Dashboard | Statistics and overview for teachers/admins |
 | 🛡 Authorization | Laravel Policies & Middleware |
 | 📦 API Resources | Clean JSON Responses |
 | ✅ Validation | Laravel Form Requests |
@@ -85,15 +94,19 @@ The goal of the project is to provide a scalable backend that can power Web, Mob
                   │
       ┌───────────┼─────────────┐
       │           │             │
-
    Courses     Lessons      Exams
-
       │           │             │
-
+   Enrollment  Materials    Questions
+                Attendance  Answers/Results
+      │           │             │
       └───────────┼─────────────┘
                   │
-
-             MySQL Database
+          ┌───────┴───────┐
+          │               │
+       Profiles     Notifications
+       Dashboard
+          │
+     MySQL Database
 ```
 
 ---
@@ -106,6 +119,14 @@ The goal of the project is to provide a scalable backend that can power Web, Mob
 - Login
 - Logout
 - User Profile
+
+---
+
+## 👤 Profiles
+
+- View Profile
+- Update Profile
+- Upload/Update Avatar
 
 ---
 
@@ -133,37 +154,64 @@ The goal of the project is to provide a scalable backend that can power Web, Mob
 
 ---
 
-## 📝 Exams (In Progress)
+## 📎 Lesson Materials
+
+- Upload Material (PDF, images)
+- Update Material
+- Delete Material
+- List Materials per Lesson
+
+---
+
+## 📝 Exams
 
 - Create Exam
-
 - Update Exam
-
 - Delete Exam
+- List Exams
 
-- Add Questions
+---
+
+## ❓ Questions
+
+- Add Questions to Exam
+- Update Question
+- Delete Question
+
+---
+
+## ✍️ Student Answers
 
 - Submit Answers
-
-- Student Results
-
----
-
-## 🔔 Notifications (Planned)
-
-- Attendance Notifications
-
-- Lesson Notifications
-
-- System Notifications
+- View Answers
 
 ---
 
-## 📅 Attendance (Planned)
+## 📊 Student Results
 
-- Attendance Tracking
+- View Results
+- Auto-graded Scoring
 
-- Attendance Reports
+---
+
+## 📅 Attendance
+
+- Record Attendance
+- View Attendance per Lesson
+
+---
+
+## 🔔 Notifications
+
+- View Notifications
+- Mark as Read
+
+---
+
+## 📈 Dashboard
+
+- Teacher/Admin Statistics
+- Course and Student Overview
 
 ---
 
@@ -204,8 +252,10 @@ Protected API Endpoints
 Current database includes:
 
 - Users
+- Profiles
 - Courses
 - Lessons
+- Lesson Materials
 - Exams
 - Questions
 - Notifications
@@ -213,6 +263,7 @@ Current database includes:
 - Student Answers
 - Student Results
 - Course Student (Pivot)
+- Personal Access Tokens
 
 Relationships are implemented using Laravel Eloquent ORM.
 
@@ -221,34 +272,20 @@ Relationships are implemented using Laravel Eloquent ORM.
 # ⚙ Technologies Used
 
 - Laravel 12
-
 - PHP 8.2+
-
 - MySQL
-
 - Laravel Sanctum
-
 - RESTful API
-
 - Eloquent ORM
-
 - API Resources
-
 - Form Requests
-
 - Middleware
-
 - Policies
-
+- Observers
 - Factories
-
 - Seeders
-
 - Postman
-
-- Git
-
-- GitHub
+- Git & GitHub
 
 ---
 
@@ -256,33 +293,39 @@ Relationships are implemented using Laravel Eloquent ORM.
 
 ```
 app/
-
- Controllers/
-
- Middleware/
-
- Models/
-
- Policies/
-
- Requests/
-
- Resources/
+  Http/
+    Controllers/
+      Api/
+        AuthController.php
+        CourseController.php
+      AttendanceController.php
+      DashboardController.php
+      ExamController.php
+      LessonController.php
+      LessonMaterialController.php
+      NotificationController.php
+      ProfileController.php
+      QuestionController.php
+      StudentAnswerController.php
+      StudentResultController.php
+    Middleware/
+      SanitizeMethodOverride.php
+    Requests/
+    Resources/
+  Models/
+  Observers/
+  Policies/
+  Providers/
 
 database/
-
- migrations/
-
- factories/
-
- seeders/
+  migrations/
+  factories/
+  seeders/
 
 routes/
-
- api.php
+  api.php
 
 config/
-
 tests/
 ```
 
@@ -290,53 +333,72 @@ tests/
 
 # 🚀 Installation
 
-Clone the repository
+### 1. Clone the repository
 
 ```bash
 git clone https://github.com/tamerayman/Center-Management-API.git
-```
-
-Move into the project
-
-```bash
 cd Center-Management-API
 ```
 
-Install dependencies
+### 2. Install dependencies
 
 ```bash
 composer install
 ```
 
-Copy environment file
+### 3. Setup environment
 
 ```bash
 cp .env.example .env
-```
-
-Generate application key
-
-```bash
 php artisan key:generate
 ```
 
-Run migrations
+### 4. Configure database
+
+Open `.env` and set your database credentials:
+
+```dotenv
+DB_CONNECTION=mysql
+DB_HOST=127.0.0.1
+DB_PORT=3306
+DB_DATABASE=center
+DB_USERNAME=root
+DB_PASSWORD=
+```
+
+Then create the database:
+
+```sql
+CREATE DATABASE center;
+```
+
+### 5. Run migrations
 
 ```bash
 php artisan migrate
 ```
 
-(Optional)
+### 6. Seed the database (optional)
 
 ```bash
 php artisan db:seed
 ```
 
-Serve the project
+This creates sample users (admin, teachers, students), courses, lessons, exams, and questions.
+
+### 7. Create storage link
+
+```bash
+php artisan storage:link
+```
+
+### 8. Start the server
 
 ```bash
 php artisan serve
 ```
+
+The API will be available at `http://localhost:8000`.
 
 ---
 
@@ -348,36 +410,27 @@ php artisan serve
 | Authorization | ✅ Completed |
 | Sanctum | ✅ Completed |
 | Courses | ✅ Completed |
-| Lessons | 🚧 In Progress |
-| Exams | 🚧 In Progress |
-| Notifications | ⏳ Planned |
-| Attendance | ⏳ Planned |
-| Student Results | ⏳ Planned |
+| Lessons | ✅ Completed |
+| Lesson Materials | ✅ Completed |
+| Exams | ✅ Completed |
+| Questions | ✅ Completed |
+| Student Answers | ✅ Completed |
+| Student Results | ✅ Completed |
+| Attendance | ✅ Completed |
+| Notifications | ✅ Completed |
+| Profiles | ✅ Completed |
+| Dashboard | ✅ Completed |
 | API Documentation | ⏳ Planned |
 
 ---
 
 # 🎯 Upcoming Features
 
-- Online Exams
-
-- Student Results
-
-- Attendance Reports
-
-- Notification System
-
-- File Uploads
-
-- Dashboard Statistics
-
+- Swagger / OpenAPI Documentation
 - Search & Filtering
-
-- Pagination
-
-- Swagger Documentation
-
+- Pagination Improvements
 - Unit & Feature Testing
+- Performance Optimizations
 
 ---
 

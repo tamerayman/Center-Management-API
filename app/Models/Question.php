@@ -24,7 +24,7 @@ protected $fillable = [
 {
     return $this->belongsTo(Exam::class);
 }
-public function answers()
+public function studentAnswers()
 {
     return $this->hasMany(StudentAnswer::class);
 }

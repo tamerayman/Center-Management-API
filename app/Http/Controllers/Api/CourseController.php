@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Models\Course;
 use App\Http\Resources\CourseResource;
+use App\Models\Notification;
 use App\Http\Requests\StoreCourseRequest;
 use App\Http\Requests\UpdateCourseRequest;
 use GuzzleHttp\Psr7\Response;
@@ -38,8 +39,7 @@ class CourseController extends Controller
         } elseif ($request->user()->role == 'student') {
 
             $course = $request->user()->enrolledCourses()->with(['teacher', 'lessons', 'exams'])->findOrFail($course->id);
-        } 
-        else {
+        } else {
             return response()->json(['message' => 'Unauthorized'], 403);
         }
 
@@ -48,7 +48,7 @@ class CourseController extends Controller
 
     public function store(StoreCourseRequest $request)
     {
-      
+
         $course = $request->user()->courses()->create($request->validated());
 
         return new CourseResource($course);
@@ -66,8 +66,8 @@ class CourseController extends Controller
     public function update(UpdateCourseRequest $request, Course $course)
     {
 
-         $this->authorize('update', $course);
-     
+        $this->authorize('update', $course);
+
         $course->update($request->validated());
 
         return new CourseResource($course);
@@ -96,7 +96,14 @@ class CourseController extends Controller
         }
         $course->students()->syncWithoutDetaching($request->user()->id);
         //or
-    //    $request->user->enrolledCourses()->syncWithoutDetaching($course->id);
+        //    $request->user->enrolledCourses()->syncWithoutDetaching($course->id);
+
+        // Create a notification for the user
+        Notification::create([
+            'user_id' => $request->user()->id,
+            'title' => 'Course Enrollment',
+            'message' => "You have been enrolled in {$course->title}.",
+        ]);
         return response()->json([
             'message' => 'Course joined successfully.'
         ]);
@@ -104,22 +111,35 @@ class CourseController extends Controller
 
     public function leave(Request $request, Course $course)
     {
+        if (! $course->students()->where('student_id', $request->user()->id)->exists()) {
+            return response()->json([
+                'message' => 'You are not enrolled in this course.'
+            ], 404);
+        }
 
 
         $course->students()->detach($request->user()->id);
+        //Create a notification for the user
+        Notification::create([
+            'user_id' => $request->user()->id,
+            'title' => 'Course Unenrollment',
+            'message' => "You have been unenrolled from {$course->title}.",
+        ]);
+
+
 
         return response()->json([
             'message' => 'Course left successfully.'
         ]);
     }
 
-     public function students(Course $course)
-     {
+    public function students(Course $course)
+    {
 
         $students = $course->students()->get();
 
         return response()->json([
             'students' => $students
         ]);
-     }
+    }
 }

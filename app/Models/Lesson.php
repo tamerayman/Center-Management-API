@@ -24,6 +24,9 @@ public function attendances()
 {
     return $this->hasMany(Attendance::class);
 }
-
+public function materials()
+{
+    return $this->hasMany(LessonMaterial::class);
+}
 
 }

@@ -4,6 +4,7 @@ namespace App\Policies;
 
 use App\Models\Question;
 use App\Models\User;
+use App\Models\Exam;
 use Illuminate\Auth\Access\Response;
 
 class QuestionPolicy
@@ -27,9 +28,11 @@ class QuestionPolicy
     /**
      * Determine whether the user can create models.
      */
-    public function create(User $user ,  Question $question ): bool
+    public function create(User $user ,   Exam $exam ): bool
     {
-        return $user->role === 'teacher'&& $user->id === $question->exam->course->teacher_id;
+        //الكود اللي تحت ده غلط عشان السؤال لسه معتعملش اصلا فا لزما يبقي امتحان
+        //return $user->role === 'teacher'&& $user->id === $question->exam->course->teacher_id;
+        return $user->role === 'teacher'&& $exam->course->teacher_id === $user->id;
     }
 
     /**
@@ -63,4 +66,21 @@ class QuestionPolicy
     {
         return false;
     }
+
+
+
+
+    public function viewQuestions(User $user, Exam $exam): bool
+{
+    if ($user->role === 'teacher') {
+        return $exam->course->teacher_id === $user->id;
+    }
+
+    if ($user->role === 'student') {
+         return $exam->course->students()->where('student_id', $user->id)->exists();
+   
+    }
+
+    return false;
+}
 }

@@ -6,7 +6,10 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\LoginRequest;
 use App\Http\Requests\RegisterRequest;
 use App\Http\Resources\ProfileResource;
+use App\Models\Exam;
+use App\Models\Lesson;
 
+use App\Models\Notification;
 use App\Models\User;
 use Illuminate\Http\Request;
 //استدعي ال hash
@@ -23,10 +26,16 @@ class AuthController extends Controller
             'role' => $request->role,
         ]);
         $token = $user->createToken('api-token')->plainTextToken;
+        // Create a notification for the user about successful registration
+        Notification::create([
+            'user_id' => $user->id,
+            'title' => 'Welcome',
+            'message' => 'Welcome to Center Management API.'
+        ]);
         return response()->json([
             'message' => 'User registered successfully.',
             'user' => $user,
-            'token'=>$token,
+            'token' => $token,
         ], 201);
     }
 
@@ -61,8 +70,5 @@ class AuthController extends Controller
         ]);
     }
 
-    public function profile(Request $request)
-    {
-        return new ProfileResource($request->user());
+
     }
-}

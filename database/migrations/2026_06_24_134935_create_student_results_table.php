@@ -15,7 +15,11 @@ return new class extends Migration
             $table->id();
             $table->foreignId('student_id')->constrained('users')->cascadeOnDelete();
             $table->foreignId('exam_id')->constrained('exams')->cascadeOnDelete();
-            $table->integer('score');
+            $table->integer('score')->default(0);
+            $table->integer('total_marks');
+            $table->enum('status', ['passed', 'failed'])->default('failed');
+            $table->timestamp('submitted_at')->nullable();
+            $table->unique(['student_id', 'exam_id']);  // طالب ما يعملش result لنفس الامتحان مرتين
             $table->timestamps();
         });
     }
