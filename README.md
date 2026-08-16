@@ -1,59 +1,402 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
+<h1 align="center">
+🎓 Center Management API
+</h1>
 
 <p align="center">
-<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
+A scalable and secure RESTful API built with Laravel for managing educational centers, courses, lessons, exams, attendance, and student progress.
 </p>
 
-## About Laravel
+<p align="center">
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+<img src="https://img.shields.io/badge/Laravel-12-FF2D20?style=for-the-badge&logo=laravel&logoColor=white"/>
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+<img src="https://img.shields.io/badge/PHP-8.2+-777BB4?style=for-the-badge&logo=php&logoColor=white"/>
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
+<img src="https://img.shields.io/badge/MySQL-8-4479A1?style=for-the-badge&logo=mysql&logoColor=white"/>
 
-## Learning Laravel
+<img src="https://img.shields.io/badge/REST_API-005571?style=for-the-badge"/>
 
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework. You can also check out [Laravel Learn](https://laravel.com/learn), where you will be guided through building a modern Laravel application.
+<img src="https://img.shields.io/badge/Sanctum-Authentication-orange?style=for-the-badge"/>
 
-If you don't feel like reading, [Laracasts](https://laracasts.com) can help. Laracasts contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
+<img src="https://img.shields.io/badge/Eloquent_ORM-Laravel-red?style=for-the-badge"/>
 
-## Laravel Sponsors
+<img src="https://img.shields.io/badge/API_Resources-JSON-success?style=for-the-badge"/>
 
-We would like to extend our thanks to the following sponsors for funding Laravel development. If you are interested in becoming a sponsor, please visit the [Laravel Partners program](https://partners.laravel.com).
+<img src="https://img.shields.io/badge/Form_Requests-Validation-blue?style=for-the-badge"/>
 
-### Premium Partners
+<img src="https://img.shields.io/badge/Middleware-Authorization-green?style=for-the-badge"/>
 
-- **[Vehikl](https://vehikl.com)**
-- **[Tighten Co.](https://tighten.co)**
-- **[Kirschbaum Development Group](https://kirschbaumdevelopment.com)**
-- **[64 Robots](https://64robots.com)**
-- **[Curotec](https://www.curotec.com/services/technologies/laravel)**
-- **[DevSquad](https://devsquad.com/hire-laravel-developers)**
-- **[Redberry](https://redberry.international/laravel-development)**
-- **[Active Logic](https://activelogic.com)**
+<img src="https://img.shields.io/badge/Policies-Access_Control-purple?style=for-the-badge"/>
 
-## Contributing
+<img src="https://img.shields.io/badge/Factories-Seeding-yellow?style=for-the-badge"/>
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
+<img src="https://img.shields.io/badge/Postman-Test_API-orange?style=for-the-badge"/>
 
-## Code of Conduct
+</p>
 
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
+---
 
-## Security Vulnerabilities
+# 📖 Overview
 
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
+Center Management API is a backend system built with **Laravel** to simplify the management of educational centers.
 
-## License
+The project follows RESTful API architecture and provides authentication, authorization, course management, lesson management, online exams, attendance tracking, notifications, and many additional educational services.
 
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+The goal of the project is to provide a scalable backend that can power Web, Mobile, or Desktop applications.
+
+---
+
+# ✨ Current Features
+
+| Module | Description |
+|----------|-------------|
+| 🔐 Authentication | Register, Login, Logout using Laravel Sanctum |
+| 👤 User Roles | Admin, Teacher and Student roles |
+| 📚 Courses | Create, Update, Delete and Browse Courses |
+| 🎓 Enrollment | Students can Join and Leave Courses |
+| 📖 Lessons | Lesson Management |
+| 🛡 Authorization | Laravel Policies & Middleware |
+| 📦 API Resources | Clean JSON Responses |
+| ✅ Validation | Laravel Form Requests |
+| 🌱 Database Seeding | Factories & Seeders |
+
+---
+
+# 🏗 System Architecture
+
+```
+                    Client
+      (Web / Mobile / Postman)
+
+                  │
+                  │
+          Bearer Token
+          Laravel Sanctum
+                  │
+                  ▼
+
+             Laravel API
+
+     Authentication
+     Authorization
+     Validation
+     API Resources
+
+                  │
+      ┌───────────┼─────────────┐
+      │           │             │
+
+   Courses     Lessons      Exams
+
+      │           │             │
+
+      └───────────┼─────────────┘
+                  │
+
+             MySQL Database
+```
+
+---
+
+# 📦 API Modules
+
+## 🔐 Authentication
+
+- Register
+- Login
+- Logout
+- User Profile
+
+---
+
+## 👨‍🏫 Courses
+
+- List all Courses
+- My Courses
+- Course Details
+- My Course Details
+- Create Course
+- Update Course
+- Delete Course
+- Join Course
+- Leave Course
+
+---
+
+## 📖 Lessons
+
+- Create Lesson
+- Update Lesson
+- Delete Lesson
+- List Lessons
+- My Lessons
+
+---
+
+## 📝 Exams (In Progress)
+
+- Create Exam
+
+- Update Exam
+
+- Delete Exam
+
+- Add Questions
+
+- Submit Answers
+
+- Student Results
+
+---
+
+## 🔔 Notifications (Planned)
+
+- Attendance Notifications
+
+- Lesson Notifications
+
+- System Notifications
+
+---
+
+## 📅 Attendance (Planned)
+
+- Attendance Tracking
+
+- Attendance Reports
+
+---
+
+# 🛡 Authentication Flow
+
+```
+Register/Login
+
+      │
+
+      ▼
+
+Laravel Sanctum
+
+      │
+
+Generate Token
+
+      │
+
+      ▼
+
+Authorization Header
+
+Bearer TOKEN
+
+      │
+
+      ▼
+
+Protected API Endpoints
+```
+
+---
+
+# 🗃 Database Design
+
+Current database includes:
+
+- Users
+- Courses
+- Lessons
+- Exams
+- Questions
+- Notifications
+- Attendances
+- Student Answers
+- Student Results
+- Course Student (Pivot)
+
+Relationships are implemented using Laravel Eloquent ORM.
+
+---
+
+# ⚙ Technologies Used
+
+- Laravel 12
+
+- PHP 8.2+
+
+- MySQL
+
+- Laravel Sanctum
+
+- RESTful API
+
+- Eloquent ORM
+
+- API Resources
+
+- Form Requests
+
+- Middleware
+
+- Policies
+
+- Factories
+
+- Seeders
+
+- Postman
+
+- Git
+
+- GitHub
+
+---
+
+# 📂 Project Structure
+
+```
+app/
+
+ Controllers/
+
+ Middleware/
+
+ Models/
+
+ Policies/
+
+ Requests/
+
+ Resources/
+
+database/
+
+ migrations/
+
+ factories/
+
+ seeders/
+
+routes/
+
+ api.php
+
+config/
+
+tests/
+```
+
+---
+
+# 🚀 Installation
+
+Clone the repository
+
+```bash
+git clone https://github.com/tamerayman/Center-Management-API.git
+```
+
+Move into the project
+
+```bash
+cd Center-Management-API
+```
+
+Install dependencies
+
+```bash
+composer install
+```
+
+Copy environment file
+
+```bash
+cp .env.example .env
+```
+
+Generate application key
+
+```bash
+php artisan key:generate
+```
+
+Run migrations
+
+```bash
+php artisan migrate
+```
+
+(Optional)
+
+```bash
+php artisan db:seed
+```
+
+Serve the project
+
+```bash
+php artisan serve
+```
+
+---
+
+# 📈 Current Progress
+
+| Module | Status |
+|---------|--------|
+| Authentication | ✅ Completed |
+| Authorization | ✅ Completed |
+| Sanctum | ✅ Completed |
+| Courses | ✅ Completed |
+| Lessons | 🚧 In Progress |
+| Exams | 🚧 In Progress |
+| Notifications | ⏳ Planned |
+| Attendance | ⏳ Planned |
+| Student Results | ⏳ Planned |
+| API Documentation | ⏳ Planned |
+
+---
+
+# 🎯 Upcoming Features
+
+- Online Exams
+
+- Student Results
+
+- Attendance Reports
+
+- Notification System
+
+- File Uploads
+
+- Dashboard Statistics
+
+- Search & Filtering
+
+- Pagination
+
+- Swagger Documentation
+
+- Unit & Feature Testing
+
+---
+
+# 🤝 Contributing
+
+Contributions, suggestions and improvements are welcome.
+
+Feel free to fork the repository and submit a Pull Request.
+
+---
+
+# 📄 License
+
+This project is licensed under the MIT License.
+
+---
+
+<p align="center">
+
+Developed with ❤️ by <b>Tamer Ayman</b>
+
+</p>
