@@ -15,10 +15,17 @@ class ExamResource extends JsonResource
     public function toArray(Request $request): array
     {
         return [
+
             'id' => $this->id,
             'title' => $this->title,
-            'created_at' => $this->created_at,
-            'updated_at' => $this->updated_at,
+            'description' => $this->description,
+            'start_time' => $this->start_time,
+            'end_time' => $this->end_time,
+            'duration' => $this->duration,
+            'total_marks' => $this->total_marks,
+
+            "course" => new CourseResource($this->whenLoaded('course')),
+
 
         ];
     }

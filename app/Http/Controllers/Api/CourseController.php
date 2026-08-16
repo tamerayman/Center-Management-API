@@ -95,7 +95,8 @@ class CourseController extends Controller
             ], 409);
         }
         $course->students()->syncWithoutDetaching($request->user()->id);
-       $request->user->enrolledCourses()->syncWithoutDetaching($course->id);
+        //or
+    //    $request->user->enrolledCourses()->syncWithoutDetaching($course->id);
         return response()->json([
             'message' => 'Course joined successfully.'
         ]);

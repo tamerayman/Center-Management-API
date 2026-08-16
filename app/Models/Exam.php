@@ -9,6 +9,16 @@ class Exam extends Model
 {
     use HasFactory;
 
+    protected $fillable=[
+        'course_id',
+        'title',
+        'description',
+        'start_time',
+        'end_time',
+        'duration',
+        'total_marks'
+    ];
+
     public function course()
 {
     return $this->belongsTo(Course::class);

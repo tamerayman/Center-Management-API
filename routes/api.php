@@ -4,7 +4,7 @@ use App\Models\User;
 use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\CourseController;
 use App\Http\Controllers\LessonController;
-
+use App\Http\Controllers\ExamController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -33,15 +33,21 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::delete('/courses/{course}/leave', [CourseController::class, 'leave']);
     });
 
-    Route::get('/my-lessons',[LessonController::class,'mylessons']);
-    Route::get('/my-lessons/{lesson}',[LessonController::class,'mylessonsDetails']);
+    Route::get('/my-lessons', [LessonController::class, 'mylessons']);
+    Route::get('/my-lessons/{lesson}', [LessonController::class, 'mylessonsDetails']);
     Route::middleware('teacher')->group(function () {
         Route::post('/courses/{course}/lessons', [LessonController::class, 'store']);
         Route::put('/lessons/{lesson}', [LessonController::class, 'update']);
         Route::delete('/lessons/{lesson}', [LessonController::class, 'destroy']);
 
         Route::get('/courses/{course}/students', [CourseController::class, 'students']);
-        
+        Route::get('/{lesson}/students', [LessonController::class, 'student']);
     });
-    Route::get('/{lesson}/students', [LessonController::class, 'student']);
+    Route::get('/myExams', [ExamController::class, 'myExams']);
+    Route::get('/myExamDetails/{exam}', [ExamController::class, 'myExamDetails']);
+    Route::middleware('teacher')->group(function () {
+        Route::post('/courses/{course}/exams', [ExamController::class, 'store']);
+        Route::put('/exams/{exam}', [ExamController::class, 'update']);
+        Route::delete('/exams/{exam}', [ExamController::class, 'destroy']);
+    });
 });

@@ -19,7 +19,8 @@ return new class extends Migration
             $table->string('option_b');
             $table->string('option_c');
             $table->string('option_d');
-            $table->string('correct_answer');
+            $table->char('correct_answer', 1);
+            $table->unsignedInteger('marks')->default(1);
             $table->timestamps();
         });
     }

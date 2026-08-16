@@ -43,41 +43,39 @@ class LessonController extends Controller
 
         return new LessonResource($lesson);
     }
-    
+
     public function store(StoreLessonRequest $request, Course $course)
     {
-          $this->authorize('create', [Lesson::class, $course]); 
+        $this->authorize('create', [Lesson::class, $course]);
 
         $lesson = $course->lessons()->create($request->validated());
 
         return new LessonResource($lesson);
     }
 
-    public function update(UpdateLesson $request, Lesson $lesson){
-   
-      $this->authorize('update',$lesson);
-      $lesson->update($request->validated());
-      
-      return new LessonResource($lesson);
+    public function update(UpdateLesson $request, Lesson $lesson)
+    {
 
+        $this->authorize('update', $lesson);
+        $lesson->update($request->validated());
+
+        return new LessonResource($lesson);
     }
-   
-    public function destroy(Request $request, Lesson $lesson){
-        $this->authorize('delete',$lesson);
+
+    public function destroy(Request $request, Lesson $lesson)
+    {
+        $this->authorize('delete', $lesson);
         $lesson->delete();
-        return response()->json([ 'message' => 'Lesson deleted successfully']);
+        return response()->json(['message' => 'Lesson deleted successfully']);
     }
 
-    
-    public function student(Lesson $lesson){
 
-    $students = $lesson->course->students()->get();
-    return response()->json([
-        'students' => $students
-    ]);
+    public function student(Lesson $lesson)
+    {
 
-
-
+        $students = $lesson->course->students()->get();
+        return response()->json([
+            'students' => $students
+        ]);
     }
-    
 }

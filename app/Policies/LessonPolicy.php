@@ -28,10 +28,12 @@ class LessonPolicy
     /**
      * Determine whether the user can create models.
      */
-    public function create(User $user, Course $course): bool
+    public function create(User $user, Lesson $lesson): bool
     {
-        return $user->role === 'teacher'
-            && $course->teacher_id === $user->id;
+        return $user->role === 'teacher'&& $user->id === $lesson->course->teacher_id;
+        
+        //or
+        // // return $user->role === 'teacher' && $user->id===course->teacher_id;
     }
 
     /**

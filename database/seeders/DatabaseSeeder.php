@@ -29,21 +29,21 @@ class DatabaseSeeder extends Seeder
                 'role' => 'teacher'
             ]);
         User::factory()
-            ->count(20)
+            ->count(10)
             ->create([
                 'role' => 'student'
             ]);
         Course::factory()
-            ->count(10)
+            ->count(5)
             ->create();
         Lesson::factory()
-            ->count(30)
-            ->create();
-        Exam::factory()
             ->count(20)
             ->create();
+        Exam::factory()
+            ->count(10)
+            ->create();
         Question::factory()
-            ->count(100)
+            ->count(9)
             ->create();
 
             

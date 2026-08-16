@@ -18,9 +18,18 @@ class ExamFactory extends Factory
      */
     public function definition(): array
     {
-        return [
-            'course_id' => Course::inRandomOrder()->first()?->id,
-            'title' => fake()->sentence(),
-        ];
+      $start = fake()->dateTimeBetween('now', '+1 month');
+    $end = (clone $start)->modify('+' . fake()->numberBetween(30, 180) . ' minutes');
+
+   return [
+    'course_id'   => Course::inRandomOrder()->first()?->id ?? Course::factory()->create()->id,
+    'title'       => fake()->sentence(),
+    'description' => fake()->optional()->paragraph(),
+    'start_time'  => $start,
+    'end_time'    => $end,
+    'duration'    => $end->getTimestamp() - $start->getTimestamp(),
+    'total_marks' => fake()->numberBetween(20, 100),
+      ];
+
     }
 }
