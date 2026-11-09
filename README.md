@@ -3,7 +3,7 @@
 </h1>
 
 <p align="center">
-An Enterprise-Grade, High-Concurrency RESTful Backend Engine built with Laravel 12 for Educational Centers, featuring an Invariant-Tested Financial Subsystem, Dual-Guard Guardian Portal, Timed Examination Engine, Role-Based Access Control, and Intelligent Caching & Rate Limiting.
+A scalable, feature-rich, and secure RESTful API built with <b>Laravel 12</b> for managing educational centers. The platform handles academic workflows—courses, lessons, schedules, exams, materials, attendance, and student progress—alongside an advanced financial engine, a dedicated guardian portal, and an administrative control center.
 </p>
 
 <p align="center">
@@ -30,58 +30,42 @@ An Enterprise-Grade, High-Concurrency RESTful Backend Engine built with Laravel 
 
 # 📖 Overview
 
-**Center Management API** is not a simple CRUD application. It is a robust, production-ready backend platform architected to manage the full operational, academic, and financial lifecycle of educational institutions and private centers.
+**Center Management API** is a complete backend solution designed to power web, mobile, and desktop applications for private tutors, educational centers, and academies.
 
-Designed with **Domain-Driven Design (DDD)** principles and a **Service Layer Pattern**, the system handles complex business logic:
-- **Financial Invariance:** A concurrency-safe accounting engine that prevents race conditions, manages historical price snapshots, tracks partial/advance payments via a FIFO credit ledger, and maintains a strict audit trail.
-- **Dual-Token Morph Authorization:** An isolated Guardian portal with zero privilege escalation risks between staff/students and parents.
-- **Server-Enforced Exam Timer:** State-managed exam sessions impervious to client-side clock tampering.
-- **Centralized Metrics Calculation:** Single-source-of-truth progress calculations with automated student intervention heuristics.
-- **Exhaustive Testing:** Backed by **200 automated tests and 973 assertions** covering concurrency locks, database transaction rollbacks, invariant constraints, and complete RBAC matrices.
-
----
-
-# 🏛️ Architecture & Advanced Engineering Highlights
-
-### 1. 💰 Financial & Accounting Engine (Zero-Drift Invariants)
-Educational centers handle complex cash flows, varying student discounts, and partial payments. The financial engine is modeled around strict ledger principles:
-* **Historical Price Immutability:** When a course changes its tuition fee, old subscriptions and historical billing records remain untouched through a temporal snapshot pattern (`course_fees`).
-* **Concurrency & Race Condition Protection:** High-frequency payment attempts and simultaneous subscriptions are serialized using database row locks (`lockForUpdate()`) and atomic DB transactions, preventing duplicate charges or corrupted balances.
-* **Partial Payments & FIFO Credit Allocation:** A monthly charge can transition across `unpaid → partially_paid → paid`. Any overpayment is automatically segregated into `student_credits`, which can be redeemed seamlessly in future billing cycles.
-* **Audit Trail via Model Observers:** Financial records are never physically destroyed. Cancellations and modifications require auditable reasons, automatically logged into `financial_audit_logs` (actor, before/after states, timestamp).
-* **Automated Invariant Testing:** Verified through `FinancialInvariantTest` ensuring that $\text{Total Invoiced} = \text{Total Collected} + \text{Remaining Balance}$ holds true under any concurrent multi-student lifecycle.
-
-### 2. 👨‍👩‍👦 Dual-Guard Guardian Portal (Zero Privilege Escalation)
-Parents need visibility into their children's progress without compromising the system's security perimeter:
-* **Polymorphic Token Separation:** Guardians exist in an independent `guardians` table with their own authentication guard (`auth:guardian`). A guardian token cannot invoke internal staff endpoints, and user tokens are strictly rejected on guardian routes via custom middleware (`EnsureGuardian` / `EnsureUserTokenable`).
-* **Cryptographic Child Binding:** Students receive an immutable, unique `guardian_code`. Parents use this token for verification during self-registration and multi-child linking.
-* **Strict IDOR Prevention:** Every child request is filtered through `GuardianPolicy@viewChild` to guarantee that parents can **only** inspect their linked wards.
-* **Strict Read-Only Enforcement:** No academic or financial records can be mutated through the portal.
-
-### 3. ⏱️ Server-Side Timed Examination Engine
-* **Anti-Tampering Exam Attempts:** When a student begins an exam, a server-side `ExamAttempt` timestamp is recorded. The deadline is computed on the backend ($\text{deadline} = \text{start\_time} + \text{duration}$). Submissions or answers received after the deadline are blocked automatically regardless of client time.
-* **Dynamic Per-Exam Pass Mark:** Exams define configurable passing thresholds rather than fixed percentages.
-* **One-Take Enforcement with Admin Override:** Prevents duplicate submissions while allowing administrators to delete a submission to grant a retake.
-
-### 4. 📈 Centralized Progress Service (Single Source of Truth)
-Instead of storing denormalized and fragile progress columns, metrics are computed on the fly through a dedicated `ProgressService`:
-$$\text{Attendance \%} = \frac{(\text{Present} \times 1.0) + (\text{Late} \times 0.5)}{\text{Total Recorded Sessions}} \times 100$$
-$$\text{Exams Average} = \frac{\sum (\text{Student Score})}{\sum (\text{Total Available Marks})} \times 100$$
-* **Intelligent At-Risk Alerting:** Teacher dashboards automatically aggregate `students_needing_attention` if a student's attendance or exam average dips below 50%.
-
-### 5. 🛡️ Multi-Keyed Rate Limiting & Security Controls
-* **Authentication Throttling:** `throttle:auth` restricts brute-force attempts to **5 requests/minute** keyed by `IP + Email`.
-* **Guardian Auth Throttling:** `throttle:guardian-auth` keys limits by `Phone + IP`.
-* **API Throttling:** `throttle:api` enforces a generous **120 requests/minute** keyed per authenticated user ID.
-* **Email Verification & Password Reset:** HMAC-signed URLs (`signed` middleware) and cryptographic password reset tokens.
+The system combines core academic management with enterprise-level infrastructure:
+- **Core Academic Management:** Course catalogs, student self-enrollment, lesson scheduling (onsite/online), file handouts (PDFs, images), and automated attendance tracking.
+- **Online Examination Engine:** Multiple-choice questions, server-enforced exam timers, dynamic passing percentages, and instant auto-grading.
+- **Financial Subsystem:** Subscription contracts, monthly billing, multi-split and advance payments with FIFO student credits, price snapshot history, and full audit logs.
+- **Guardian Portal:** A separate parent environment using token morphing for real-time, read-only tracking of attendance, grades, and payments.
+- **Administrative Control:** Full overrides for student assignments, exam retakes, user role management, and system-wide broadcast alerts.
+- **Quality & Reliability:** Built with the Service Layer Pattern, Model Observers, and backed by **200 automated tests and 973 assertions**.
 
 ---
 
-# 📊 System Architecture Diagram
+# ✨ Feature Modules
+
+| Module | Core & Advanced Capabilities |
+|---|---|
+| 🔐 **Authentication & Security** | Sanctum bearer tokens, multi-keyed rate limiting, HMAC-signed email verification URLs, and tokenized password resets. |
+| 📚 **Courses & Enrollment** | Full course catalog, search and filters, teacher assignment, and student self-enrollment (`join` / `leave`). |
+| 📖 **Lessons & Scheduling** | Scheduled classes with dates, start/end times, delivery types (`onsite` / `online`), classroom locations, and upcoming lesson filters. |
+| 📎 **Lesson Materials** | Secure file attachments (PDFs, documents, images) associated with lessons, with download policies for enrolled students. |
+| 📝 **Online Exams & Questions** | Timed examination system with per-student countdown timers, multiple-choice questions, and customizable pass mark percentages. |
+| 📊 **Grading & Student Results** | Automated scoring on submission, attempt history, and admin override to reset results and grant retakes. |
+| 📅 **Attendance Tracking** | Lesson-by-lesson attendance recording (`present`, `late`, `absent`) with weighted presence points. |
+| 📈 **Student Progress Service** | Centralized progress calculation combining weighted attendance and exam averages, with automated flags for at-risk students. |
+| 💰 **Financial Engine** | Course fees with historical snapshots, subscription management, automated monthly charges, credit overflow (advance payments), and full audit trails. |
+| 👨‍👩‍👦 **Guardian Portal** | Decoupled parent portal with unique verification codes, multi-child linking, and read-only monitoring of academic and financial status. |
+| 👑 **Admin Control Center** | Centralized oversight: user CRUD, role transitions, course reassignment, forced enrollments, and broadcast notifications. |
+| 🔔 **Notifications** | Event-driven in-app notifications for enrollment, payments, exam dates, and attendance updates. |
+
+---
+
+# 🏗️ System Architecture
 
 ```
                              Client Applications
-                  (React / Vue / Mobile Apps / Postman)
+                  (Web Dashboard / Mobile App / Postman)
                                      │
                  ┌───────────────────┴───────────────────┐
                  │                                       │
@@ -98,12 +82,12 @@ $$\text{Exams Average} = \frac{\sum (\text{Student Score})}{\sum (\text{Total Av
  │               │                       │               │
  ▼               ▼                       ▼               │
 Academic      Administrative          Financial          │
-Module        Control Center          Subsystem          │
+Subsystems    Control Center          Subsystem          │
  ├─ Courses    ├─ User CRUD            ├─ Historical Fees│
  ├─ Lessons    ├─ Force Enrollment     ├─ Subscriptions  │
  ├─ Materials  ├─ Result Resets        ├─ Monthly Charges│
  ├─ Exams      └─ Broadcast Alerts     ├─ Payments/Credit│
- ├─ Attempts                           ├─ Invariant Engine
+ ├─ Questions                          ├─ Ledger Invariant
  └─ Attendance                         └─ Audit Trail    │
  │                                       │               │
  └───────────────────────┬───────────────┴───────────────┘
@@ -122,39 +106,75 @@ Module        Control Center          Subsystem          │
 
 ---
 
-# 👥 Role-Based Access Control (RBAC) Matrix
+# 🚀 Deep-Dive into Core & Advanced Modules
 
-| Capability / Resource | Admin 🔴 | Secretary 🔵 | Teacher 🟡 | Student 🟢 | Guardian 👨‍👩‍👦 |
-|---|:---:|:---:|:---:|:---:|:---:|
-| **Manage Users & System Roles** | ✅ Full | ❌ | ❌ | ❌ | ❌ |
-| **Create Courses & Force Enroll** | ✅ Full | ❌ | ❌ | ❌ | ❌ |
-| **Manage Own Courses & Lessons** | ✅ Override | ❌ | ✅ Own only | ❌ | ❌ |
-| **Upload Lesson Materials & Schedule** | ✅ Override | ❌ | ✅ Own only | ❌ | ❌ |
-| **Take Exams & View Own Grades** | ❌ | ❌ | ❌ | ✅ Own only | ❌ |
-| **Reset Exam Results (Allow Retake)** | ✅ Full | ❌ | ❌ | ❌ | ❌ |
-| **Record Attendance** | ✅ Override | ❌ | ✅ Own only | ❌ | ❌ |
-| **Record Payments** | ✅ Full | ✅ Full | ✅ Own courses | ❌ | ❌ |
-| **Historical Fees & Discount Config** | ✅ Full | ❌ | ❌ | ❌ | ❌ |
-| **Cancel / Update Payments** | ✅ Full | ❌ | ❌ | ❌ | ❌ |
-| **View Financial Dashboard & Overdue** | ✅ Full | ✅ Full | ❌ | ❌ | ❌ |
-| **Access Financial Audit Logs** | ✅ Full | ❌ | ❌ | ❌ | ❌ |
-| **View Ward Academic & Financial Data**| ❌ | ❌ | ❌ | ❌ | ✅ Read-only |
+### 1. 📚 Courses, Lessons & Learning Materials
+* **Course Lifecycle:** Teachers can create, update, and manage their own courses, while students can browse catalogs, filter by instructor, and join or leave freely.
+* **Smart Lesson Scheduling:** Lessons support structured scheduling with `lesson_date`, `start_time`, `end_time`, `delivery_type` (`onsite` or `online`), and `location`. Endpoints such as `GET /api/lessons/upcoming` filter future sessions tailored to each user role.
+* **Handouts & Materials:** Teachers can attach lecture notes, PDF summaries, and reference images. Files are stored securely on the server disk with access controls verifying active course enrollment before download.
+
+### 2. 📝 Timed Examination & Auto-Grading Engine
+* **Server-Side Timers:** When a student begins an exam via `POST /api/exams/{id}/start`, the server records an immutable `ExamAttempt`. The submission deadline is enforced strictly on the backend ($\text{deadline} = \text{start\_time} + \text{duration}$), protecting against client-side clock manipulation.
+* **Dynamic Pass Marks:** Teachers configure passing thresholds as a percentage (e.g., 60% or 75%) rather than a static default.
+* **Single Attempt with Retake Control:** Students cannot submit multiple times for the same exam. If a student experiences an issue, administrators have the exclusive ability to delete the result to grant an immediate retake.
+
+### 3. 📈 Attendance & Centralized Progress Tracking
+* **Weighted Attendance:** Attendance is recorded per lesson (`present` = 1.0 point, `late` = 0.5 points, `absent` = 0 points).
+* **Single Source of Truth (`ProgressService`):** Both overall and course-specific progress are computed dynamically:
+$$\text{Attendance \%} = \frac{(\text{Present} \times 1.0) + (\text{Late} \times 0.5)}{\text{Total Recorded Sessions}} \times 100$$
+$$\text{Exams Average} = \frac{\sum (\text{Student Score})}{\sum (\text{Total Available Marks})} \times 100$$
+* **At-Risk Detection:** Teacher dashboards highlight `students_needing_attention` whenever a student's attendance or exam score drops below 50%.
+
+### 4. 💰 Financial & Accounting Engine
+* **Historical Price Immutability:** When a course fee updates, a new record is added to `course_fees`. Existing subscriptions and historical invoices retain their original price snapshot.
+* **Subscription & Monthly Charges:** Joining a course opens an active financial subscription. Monthly invoices (`monthly_charges`) are generated automatically upon billing or payment, with unique constraints preventing duplicate charges for the same billing cycle.
+* **Partial Payments & Credit Ledger:** Students can pay in installments (`unpaid → partially_paid → paid`). Any overpayment excess is safely allocated to `student_credits` (FIFO queue) and can be redeemed automatically against future invoices using `use_credit: true`.
+* **Audit Trail:** Financial modifications and cancellations require documented reasons, logged to `financial_audit_logs` via model observers with before/after state captures.
+
+### 5. 👨‍👩‍👦 Guardian Portal (Dual-Guard Architecture)
+* **Isolated Authentication:** Guardians are stored in a dedicated `guardians` table and authenticate via a distinct Sanctum guard (`auth:guardian`). User tokens cannot access guardian endpoints, and guardian tokens cannot access user routes.
+* **Child Linking via Verification Code:** Each student has a unique `guardian_code` in their profile. Guardians register using this code to bind to their children, supporting multiple siblings under a single parent account.
+* **Read-Only Data Access:** Guardians have a read-only window into their children's upcoming classes, attendance records, exam results, and financial balances, with backend policies (`GuardianPolicy@viewChild`) preventing unauthorized access.
+
+### 6. 👑 Administrator Control Center
+* **Complete User Administration:** Manage staff and student accounts, reset passwords, update profiles, and adjust role permissions.
+* **Academic Overrides:** Assign courses to any teacher, force-enroll or remove students, delete exam results, and broadcast announcements to the entire center or specific user roles.
 
 ---
 
-# 🔎 Advanced Search, Filtering & Pagination
+# 👥 Role-Based Access Control (RBAC) Matrix
 
-All collection endpoints support standardized pagination query parameters (`?page=1&per_page=15`, capped at 100) returning structured pagination metadata (`current_page`, `per_page`, `total`, `last_page`, `from`, `to`).
+| Capability / Module | Admin 🔴 | Secretary 🔵 | Teacher 🟡 | Student 🟢 | Guardian 👨‍👩‍👦 |
+|---|:---:|:---:|:---:|:---:|:---:|
+| **Manage Users & Roles** | ✅ Full | ❌ | ❌ | ❌ | ❌ |
+| **Create Courses & Force Enroll** | ✅ Full | ❌ | ❌ | ❌ | ❌ |
+| **Manage Own Courses & Lessons** | ✅ Full | ❌ | ✅ Own only | ❌ | ❌ |
+| **Upload Lesson Materials** | ✅ Full | ❌ | ✅ Own only | ❌ | ❌ |
+| **Take Exams & View Results** | ❌ | ❌ | ❌ | ✅ Own only | ❌ |
+| **Reset Exam Results (Allow Retake)**| ✅ Full | ❌ | ❌ | ❌ | ❌ |
+| **Record Attendance** | ✅ Full | ❌ | ✅ Own only | ❌ | ❌ |
+| **Record Payments** | ✅ Full | ✅ Full | ✅ Own courses | ❌ | ❌ |
+| **Modify Fees & Discounts** | ✅ Full | ❌ | ❌ | ❌ | ❌ |
+| **Cancel / Update Payments** | ✅ Full | ❌ | ❌ | ❌ | ❌ |
+| **View Financial Dashboard & Overdue**| ✅ Full | ✅ Full | ❌ | ❌ | ❌ |
+| **Access Financial Audit Logs** | ✅ Full | ❌ | ❌ | ❌ | ❌ |
+| **View Child Academic & Financial Data**| ❌ | ❌ | ❌ | ❌ | ✅ Read-only |
 
-| Resource Endpoint | Supported Query Filters | Authorization Scope |
+---
+
+# 🔎 Search, Filtering & Pagination
+
+All index endpoints implement standardized pagination parameters (`?page=1&per_page=15`, capped at 100) and return unified pagination metadata (`current_page`, `per_page`, `total`, `last_page`, `from`, `to`).
+
+| Endpoint | Available Query Filters | Authorization Scope |
 |---|---|---|
-| `GET /api/admin/users` | `role`, `search` (name, email, phone) | Admin only |
 | `GET /api/courses` | `search` (title, description), `teacher_id` | Authenticated users |
-| `GET /api/attendance` | `student_id`, `course_id`, `lesson_id`, `status`, `date_from`, `date_to` | Scoped by role |
+| `GET /api/lessons/upcoming` | `course_id`, `date_from`, `date_to` | Role-scoped |
+| `GET /api/attendance` | `student_id`, `course_id`, `lesson_id`, `status`, `date_from`, `date_to` | Role-scoped |
+| `GET /api/results` | `student_id`, `exam_id`, `course_id`, `status`, `min_score`, `max_score`, `date_from`, `date_to` | Role-scoped |
 | `GET /api/finance/payments` | `student_id`, `course_id`, `method`, `status`, `year`, `month`, `amount_min`, `amount_max`, `date_from`, `date_to` | Staff / Teacher-scoped |
 | `GET /api/finance/subscriptions`| `student_id`, `course_id`, `status` | Staff / Teacher-scoped |
-| `GET /api/results` | `student_id`, `exam_id`, `course_id`, `status`, `min_score`, `max_score`, `date_from`, `date_to` | Scoped by role |
-| `GET /api/lessons/upcoming` | `course_id`, `date_from`, `date_to` | Scoped by role |
+| `GET /api/admin/users` | `role`, `search` (name, email, phone) | Admin only |
 | `GET /api/guardian/children/{id}/attendance` | `status`, `course_id`, `date_from`, `date_to` | Verified Guardian only |
 
 ---
@@ -162,30 +182,95 @@ All collection endpoints support standardized pagination query parameters (`?pag
 # 📦 API Endpoints Directory
 
 <details>
-<summary><b>🔐 1. Authentication & Security (Click to expand)</b></summary>
+<summary><b>📚 1. Courses, Lessons, Materials & Exams (Click to expand)</b></summary>
 
-| Method | Endpoint | Description | Throttling |
+| Method | Endpoint | Description | Access |
 |---|---|---|---|
-| `POST` | `/api/register` | Register new user (Student/Teacher) | 5 / min |
-| `POST` | `/api/login` | Authenticate user & issue Sanctum Bearer token | 5 / min |
-| `POST` | `/api/logout` | Revoke current access token | Standard |
-| `POST` | `/api/forgot-password` | Request password reset token | 5 / min |
-| `POST` | `/api/reset-password` | Reset password using valid email token | 5 / min |
-| `POST` | `/api/email/verification-notification` | Resend email verification notification | 5 / min |
-| `GET` | `/api/email/verify/{id}/{hash}` | Verify email address via cryptographic signed URL | Signed URL |
+| `GET` | `/api/courses` | Browse public course catalog with filters | Authenticated |
+| `GET` | `/api/my-courses` | Courses associated with the current user | Role-scoped |
+| `GET` | `/api/my-courses/{id}` | Detailed course view with lessons and exams | Role-scoped |
+| `POST` | `/api/courses` | Create a new course | Teacher / Admin |
+| `PUT` | `/api/courses/{id}` | Update course title, description, or teacher | Teacher (Owner) / Admin |
+| `DELETE`| `/api/courses/{id}` | Delete course and cascade dependent records | Teacher (Owner) / Admin |
+| `POST` | `/api/courses/{id}/join` | Student joins course (creates active subscription) | Student |
+| `DELETE`| `/api/courses/{id}/leave`| Student leaves course (cancels subscription) | Student |
+| `GET` | `/api/my-lessons` | Scheduled lessons for enrolled courses | Role-scoped |
+| `GET` | `/api/lessons/upcoming` | Upcoming lessons filtered by date and course | Role-scoped |
+| `POST` | `/api/courses/{id}/lessons` | Schedule a lesson (date, time, onsite/online) | Teacher (Owner) / Admin |
+| `PUT` | `/api/lessons/{id}` | Update lesson details and schedule | Teacher (Owner) / Admin |
+| `DELETE`| `/api/lessons/{id}` | Remove lesson | Teacher (Owner) / Admin |
+| `GET` | `/api/lessons/{id}/materials`| List attachments for a lesson | Enrolled Student / Staff |
+| `POST` | `/api/lessons/{id}/materials`| Upload handout or material (PDF, image) | Teacher (Owner) / Admin |
+| `GET` | `/api/materials/{id}/download`| Download material attachment | Enrolled Student / Staff |
+| `POST` | `/api/courses/{id}/exams` | Create an exam with duration and pass mark | Teacher (Owner) / Admin |
+| `POST` | `/api/exams/{id}/questions` | Add multiple-choice questions to exam | Teacher (Owner) / Admin |
+| `POST` | `/api/exams/{id}/start` | Initialize student exam timer attempt | Student |
+| `POST` | `/api/questions/{id}/answer` | Submit answer during an active attempt | Student |
+| `POST` | `/api/exams/{id}/submit` | Finalize exam, evaluate score, and grade | Student |
+| `GET` | `/api/my-results` | View past exam results and grades | Student |
+| `POST` | `/api/lessons/{id}/attendance`| Record student attendance for a lesson | Teacher (Owner) / Admin |
+| `GET` | `/api/progress` | View computed attendance and exam progress | Student |
 
 </details>
 
 <details>
-<summary><b>👑 2. Administrator Control Center (Click to expand)</b></summary>
+<summary><b>💰 2. Financial Management Subsystem (Click to expand)</b></summary>
+
+| Method | Endpoint | Description | Gate Protection |
+|---|---|---|---|
+| `GET` | `/api/finance/dashboard` | Key financial metrics (expected, collected, overdue) | `finance.viewAny` |
+| `GET` | `/api/finance/subscriptions` | Paginated listing of course subscriptions | `finance.access` |
+| `POST` | `/api/finance/subscriptions` | Create custom subscription (discounts, custom fees) | `finance.sensitive` |
+| `PUT` | `/api/finance/subscriptions/{id}` | Pause, resume, update fee/discount, or cancel | `finance.sensitive` |
+| `GET` | `/api/finance/charges` | List generated monthly charges and payment status | `finance.access` |
+| `POST` | `/api/finance/charges/generate` | Batch-generate charges for an active billing cycle | `finance.sensitive` |
+| `GET` | `/api/finance/payments` | Search, filter, and review payment history | `finance.access` |
+| `POST` | `/api/finance/payments` | Record payment (supports cash, credit, advance excess) | `finance.recordPayment` |
+| `PUT` | `/api/finance/payments/{id}` | Adjust payment amount (recalculates invoice balance) | `finance.sensitive` |
+| `POST` | `/api/finance/payments/{id}/cancel` | Cancel payment with mandatory audit reason | `finance.sensitive` |
+| `GET` | `/api/finance/overdue` | List students with outstanding unpaid balances | `finance.viewAny` |
+| `GET` | `/api/finance/students/{id}` | Student financial profile (invoices, payments, credits) | `finance.viewStudent` |
+| `GET` | `/api/finance/courses/{id}` | Course financial summary and collection rate | `finance.viewCourse` |
+| `GET` | `/api/finance/courses/{id}/fees` | Historical fee pricing log for a course | `finance.sensitive` |
+| `POST` | `/api/finance/courses/{id}/fees` | Update course tuition fee effective from date | `finance.sensitive` |
+| `GET` | `/api/finance/reports/monthly` | Annual month-by-month revenue report | `finance.viewAny` |
+| `GET` | `/api/finance/reports/collection` | Collection rate efficiency analysis | `finance.viewAny` |
+| `GET` | `/api/finance/audit-logs` | Immutable audit trail of financial mutations | `finance.sensitive` |
+
+</details>
+
+<details>
+<summary><b>👨‍👩‍👦 3. Guardian Portal (Click to expand)</b></summary>
+
+| Method | Endpoint | Description | Auth Guard |
+|---|---|---|---|
+| `POST` | `/api/guardian/register` | Register guardian account linked via student code | `throttle:guardian-auth` |
+| `POST` | `/api/guardian/login` | Authenticate guardian via phone + password | `throttle:guardian-auth` |
+| `POST` | `/api/guardian/logout` | Revoke guardian authentication token | `auth:guardian` |
+| `GET` | `/api/guardian/children` | List linked children with real-time academic status | `auth:guardian` |
+| `POST` | `/api/guardian/children` | Link additional child using their guardian code | `auth:guardian` |
+| `GET` | `/api/guardian/children/{student}` | Complete child profile (courses, attendance, fees) | `auth:guardian` |
+| `GET` | `/api/guardian/children/{student}/payments` | Payment receipts and history for child | `auth:guardian` |
+| `GET` | `/api/guardian/children/{student}/progress` | Real-time weighted attendance and exam metrics | `auth:guardian` |
+| `GET` | `/api/guardian/children/{student}/lessons/upcoming` | Child's upcoming scheduled sessions | `auth:guardian` |
+| `GET` | `/api/guardian/children/{student}/attendance` | Detailed attendance log for child | `auth:guardian` |
+| `GET` | `/api/guardian/dashboard` | Portal dashboard with unread notification badges | `auth:guardian` |
+| `GET` | `/api/guardian/notifications` | In-app alerts (exam dates, attendance, receipts) | `auth:guardian` |
+| `PATCH` | `/api/guardian/notifications/{id}/read` | Mark individual notification as read | `auth:guardian` |
+| `PATCH` | `/api/guardian/notifications/read-all` | Mark all notifications as read | `auth:guardian` |
+
+</details>
+
+<details>
+<summary><b>👑 4. Administrator Control Center (Click to expand)</b></summary>
 
 | Method | Endpoint | Description | Access |
 |---|---|---|---|
-| `GET` | `/api/admin/users` | List and search all users with pagination & role filters | Admin |
+| `GET` | `/api/admin/users` | List and search all users with role filters | Admin |
 | `POST` | `/api/admin/users` | Create user with explicit role assignment | Admin |
 | `GET` | `/api/admin/users/{id}` | Inspect user profile, enrollment, and statistics | Admin |
 | `PUT` | `/api/admin/users/{id}` | Update user details, credentials, or role | Admin |
-| `DELETE` | `/api/admin/users/{id}` | Cascade delete user (with safety guard against self-deletion) | Admin |
+| `DELETE` | `/api/admin/users/{id}` | Cascade delete user (safeguard against self-deletion) | Admin |
 | `POST` | `/api/admin/courses` | Create a course assigned to any designated teacher | Admin |
 | `GET` | `/api/admin/courses/{id}/students` | Inspect all enrolled students in a course | Admin |
 | `POST` | `/api/admin/courses/{id}/students` | Force-enroll students in batch | Admin |
@@ -193,84 +278,26 @@ All collection endpoints support standardized pagination query parameters (`?pag
 | `GET` | `/api/admin/results` | View all exam results with performance filters | Admin |
 | `DELETE` | `/api/admin/results/{id}` | Delete exam submission (enables student to retake) | Admin |
 | `POST` | `/api/admin/notifications` | Send direct notification to a specific user | Admin |
-| `POST` | `/api/admin/notifications/broadcast` | Broadcast notification to all users or filtered by role | Admin |
+| `POST` | `/api/admin/notifications/broadcast` | Broadcast announcement to all users or by role | Admin |
 
 </details>
 
 <details>
-<summary><b>💰 3. Financial Management Subsystem (Click to expand)</b></summary>
+<summary><b>🔐 5. Authentication & Account Management (Click to expand)</b></summary>
 
-| Method | Endpoint | Description | Gate Protection |
+| Method | Endpoint | Description | Rate Limit |
 |---|---|---|---|
-| `GET` | `/api/finance/dashboard` | High-level metrics (expected, collected, remaining, rate) | `finance.viewAny` |
-| `GET` | `/api/finance/subscriptions` | Paginated listing of student course subscriptions | `finance.access` |
-| `POST` | `/api/finance/subscriptions` | Create custom subscription (custom fee/discount/dates) | `finance.sensitive` |
-| `PUT` | `/api/finance/subscriptions/{id}` | Pause, resume, update fee/discount, or cancel subscription | `finance.sensitive` |
-| `GET` | `/api/finance/charges` | List generated monthly charges and payment statuses | `finance.access` |
-| `POST` | `/api/finance/charges/generate` | Batch-generate charges for an active subscription cycle | `finance.sensitive` |
-| `GET` | `/api/finance/payments` | Search and filter payment records | `finance.access` |
-| `POST` | `/api/finance/payments` | Record payment (supports cash, credit deduction, overflow) | `finance.recordPayment` |
-| `PUT` | `/api/finance/payments/{id}` | Adjust recorded payment amount (recalculates ledger) | `finance.sensitive` |
-| `POST` | `/api/finance/payments/{id}/cancel` | Cancel payment with audit reason (reverses balance) | `finance.sensitive` |
-| `GET` | `/api/finance/overdue` | List students with outstanding unpaid balances | `finance.viewAny` |
-| `GET` | `/api/finance/students/{id}` | Full student financial dossier (charges, payments, credits) | `finance.viewStudent` |
-| `GET` | `/api/finance/courses/{id}` | Course financial analytics (revenue, collection rate) | `finance.viewCourse` |
-| `GET` | `/api/finance/courses/{id}/fees` | Historical pricing change log for a course | `finance.sensitive` |
-| `POST` | `/api/finance/courses/{id}/fees` | Post new price update effective from given date | `finance.sensitive` |
-| `GET` | `/api/finance/reports/monthly` | Annual month-by-month revenue aggregation | `finance.viewAny` |
-| `GET` | `/api/finance/reports/collection` | Collection rate performance breakdown | `finance.viewAny` |
-| `GET` | `/api/finance/audit-logs` | Immutable log of all financial mutations | `finance.sensitive` |
-
-</details>
-
-<details>
-<summary><b>👨‍👩‍👦 4. Guardian Portal (Click to expand)</b></summary>
-
-| Method | Endpoint | Description | Auth Guard |
-|---|---|---|---|
-| `POST` | `/api/guardian/register` | Register guardian account linked via student guardian code | `throttle:guardian-auth` |
-| `POST` | `/api/guardian/login` | Authenticate guardian via phone + password | `throttle:guardian-auth` |
-| `POST` | `/api/guardian/logout` | Revoke guardian authentication token | `auth:guardian` |
-| `GET` | `/api/guardian/children` | List all linked children with real-time academic summaries | `auth:guardian` |
-| `POST` | `/api/guardian/children` | Link additional child using their guardian code | `auth:guardian` |
-| `GET` | `/api/guardian/children/{student}` | Deep-dive child profile (courses, attendance, exams, fees) | `auth:guardian` |
-| `GET` | `/api/guardian/children/{student}/payments` | Historical payment receipts for the child | `auth:guardian` |
-| `GET` | `/api/guardian/children/{student}/progress` | Real-time weighted attendance and exam progress | `auth:guardian` |
-| `GET` | `/api/guardian/children/{student}/lessons/upcoming` | Child's upcoming scheduled lessons | `auth:guardian` |
-| `GET` | `/api/guardian/children/{student}/attendance` | Detailed attendance log for the child | `auth:guardian` |
-| `GET` | `/api/guardian/dashboard` | Portal overview with unread notifications counter | `auth:guardian` |
-| `GET` | `/api/guardian/notifications` | In-app alerts (exam dates, attendance alerts, receipts) | `auth:guardian` |
-| `PATCH` | `/api/guardian/notifications/{id}/read` | Mark individual notification as read | `auth:guardian` |
-| `PATCH` | `/api/guardian/notifications/read-all` | Mark all child-related notifications as read | `auth:guardian` |
-
-</details>
-
-<details>
-<summary><b>📚 5. Courses, Lessons, Materials & Exams (Click to expand)</b></summary>
-
-| Method | Endpoint | Description | Role Scope |
-|---|---|---|---|
-| `GET` | `/api/courses` | Searchable course catalog | Authenticated |
-| `GET` | `/api/my-courses` | Courses associated with current user | Role-scoped |
-| `GET` | `/api/my-courses/{id}` | Deep course details including lesson & exam roster | Role-scoped |
-| `POST` | `/api/courses` | Create new course | Teacher / Admin |
-| `PUT` | `/api/courses/{id}` | Update course metadata | Teacher (Owner) / Admin |
-| `DELETE`| `/api/courses/{id}` | Remove course | Teacher (Owner) / Admin |
-| `POST` | `/api/courses/{id}/join` | Student course self-enrollment (opens subscription) | Student |
-| `DELETE`| `/api/courses/{id}/leave`| Student unenrollment (closes subscription) | Student |
-| `GET` | `/api/my-lessons` | Retrieve scheduled lessons | Role-scoped |
-| `GET` | `/api/lessons/upcoming` | Filter upcoming scheduled sessions | Role-scoped |
-| `POST` | `/api/courses/{id}/lessons` | Schedule lesson (onsite/online, date, duration, room) | Teacher (Owner) / Admin |
-| `POST` | `/api/lessons/{id}/materials` | Upload lesson handouts/attachments (PDF, images) | Teacher (Owner) / Admin |
-| `GET` | `/api/materials/{id}/download` | Secure file download endpoint | Enrolled Student / Staff |
-| `POST` | `/api/courses/{id}/exams` | Configure exam (duration, start/end dates, pass mark) | Teacher (Owner) / Admin |
-| `POST` | `/api/exams/{id}/questions` | Add multiple-choice questions with answer choices | Teacher (Owner) / Admin |
-| `POST` | `/api/exams/{id}/start` | Initialize server-side exam timer attempt | Student |
-| `POST` | `/api/questions/{id}/answer` | Record student question answer during active attempt | Student |
-| `POST` | `/api/exams/{id}/submit` | Finalize exam, evaluate score, compute pass/fail | Student |
-| `GET` | `/api/my-results` | Student exam history and scores | Student |
-| `POST` | `/api/lessons/{id}/attendance`| Record lesson attendance (present, late, absent) | Teacher (Owner) / Admin |
-| `GET` | `/api/progress` | Get computed progress metrics (attendance & exams) | Student |
+| `POST` | `/api/register` | Register new user (Student or Teacher) | 5 / min |
+| `POST` | `/api/login` | Authenticate user & issue Sanctum Bearer token | 5 / min |
+| `POST` | `/api/logout` | Revoke current access token | Standard |
+| `POST` | `/api/forgot-password` | Request password reset email | 5 / min |
+| `POST` | `/api/reset-password` | Reset password using email verification token | 5 / min |
+| `POST` | `/api/email/verification-notification` | Resend email verification notification | 5 / min |
+| `GET` | `/api/email/verify/{id}/{hash}` | Verify email address via signed URL | Signed URL |
+| `GET` | `/api/profile` | View authenticated user profile | Standard |
+| `PUT` | `/api/profile` | Update profile information | Standard |
+| `POST` | `/api/profile/avatar` | Upload and update profile photo | Standard |
+| `DELETE`| `/api/profile/avatar` | Remove profile photo | Standard |
 
 </details>
 
@@ -278,7 +305,7 @@ All collection endpoints support standardized pagination query parameters (`?pag
 
 # 🧪 Testing & Quality Assurance
 
-The codebase maintains an uncompromising test-driven standard, validated via **PHPUnit** and SQLite in-memory suites.
+The codebase is thoroughly tested using **PHPUnit** with SQLite in-memory test databases, validating business logic, permission gates, and data integrity.
 
 ```bash
 php artisan test
@@ -308,18 +335,12 @@ php artisan test
   Duration: 80.10s
 ```
 
-### Highlights of Test Coverage:
-* **`FinancialInvariantTest`:** Validates invariant mathematical conservation of balances through multi-stage payment lifecycles, discounts, and concurrent charges.
-* **`AuthorizationMatrixTest`:** Comprehensive permission checks guaranteeing that no role can breach horizontal or vertical boundaries.
-* **`ExamFlowTest`:** Enforces timer expiration, anti-double-submission constraints, and automated grading precision.
-* **`RateLimitingTest`:** Asserts HTTP `429 Too Many Requests` responses under brute-force attacks across all key throttlers.
-
 ---
 
 # 🚀 Getting Started
 
 ### Prerequisites
-- PHP `>= 8.2` with PDO, OpenSSL, Mbstring, and Tokenizer extensions
+- PHP `>= 8.2` (PDO, OpenSSL, Mbstring, Tokenizer extensions)
 - Composer `>= 2.0`
 - MySQL `>= 8.0`
 
@@ -336,7 +357,7 @@ cp .env.example .env
 php artisan key:generate
 ```
 
-Configure your MySQL connection in `.env`:
+Set your database credentials in `.env`:
 ```dotenv
 DB_CONNECTION=mysql
 DB_HOST=127.0.0.1
@@ -352,7 +373,7 @@ php artisan migrate --seed
 php artisan storage:link
 ```
 
-The database seeder automatically initializes realistic demo accounts:
+The database seeder initializes ready-to-test accounts:
 | Role | Email | Password |
 |---|---|---|
 | **Admin** | `admin@test.com` | `12345678` |
@@ -364,10 +385,10 @@ The database seeder automatically initializes realistic demo accounts:
 ```bash
 php artisan serve
 ```
-The REST API will be live at `http://127.0.0.1:8000`.
+The API is available at `http://127.0.0.1:8000`.
 
 ### 5. Postman Collection
-Import the ready-to-test Postman workspace located at:
+Import the complete Postman collection located at:
 📁 [`docs/center-api-postman-collection.json`](docs/center-api-postman-collection.json)
 
 ---
@@ -377,5 +398,5 @@ Import the ready-to-test Postman workspace located at:
 This project is open-source software licensed under the **[MIT License](LICENSE)**.
 
 <p align="center">
-Architected & Maintained with passion by <b>Tamer Ayman</b>
+Developed with ❤️ by <b>Tamer Ayman</b>
 </p>
