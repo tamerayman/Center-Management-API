@@ -1,0 +1,2868 @@
+{
+ "info": {
+  "_postman_id": "b1c2d3e4-0001-4a2b-9c3d-202609120001",
+  "name": "center api (final 2026-09-13 — v3 production)",
+  "description": "Center Management API — كولكشن كاملة محدثة بتشمل الـ endpoints الجديدة:\n- نظام التحكم الكامل للأدمن (/admin/users, /admin/courses, /admin/results, /admin/notifications)\n- forgot-password / reset-password / email verification\n- exam start (per-student timer)\n- التسمية الجديدة: /my-exams, /my-results\n- pass_mark في إنشاء الامتحان\n\nحساب الأدمن التجريبي (من الـ seeder): admin@test.com / 12345678\n\nبعد التسجيل/الدخول استخدم التوكن في Header:\nAuthorization: Bearer <token>",
+  "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+ },
+ "variable": [
+  {
+   "key": "base_url",
+   "value": "http://127.0.0.1:8000/api"
+  },
+  {
+   "key": "token",
+   "value": ""
+  },
+  {
+   "key": "exam_id",
+   "value": "1"
+  },
+  {
+   "key": "course_id",
+   "value": "1"
+  },
+  {
+   "key": "lesson_id",
+   "value": "1"
+  },
+  {
+   "key": "question_id",
+   "value": "1"
+  },
+  {
+   "key": "material_id",
+   "value": "1"
+  },
+  {
+   "key": "notification_id",
+   "value": "1"
+  },
+  {
+   "key": "student_id",
+   "value": "2"
+  },
+  {
+   "key": "guardian_code",
+   "value": "GUARD-XXXX-XXXX"
+  }
+ ],
+ "auth": {
+  "type": "bearer",
+  "bearer": [
+   {
+    "key": "token",
+    "value": "{{token}}",
+    "type": "string"
+   }
+  ]
+ },
+ "item": [
+  {
+   "name": "center",
+   "item": [
+    {
+     "name": "auth",
+     "item": [
+      {
+       "name": "register",
+       "request": {
+        "auth": {
+         "type": "noauth"
+        },
+        "method": "POST",
+        "header": [
+         {
+          "key": "Content-Type",
+          "value": "application/json"
+         }
+        ],
+        "body": {
+         "mode": "raw",
+         "raw": "{\n    \"name\": \"ahmed\",\n    \"email\": \"ahmed@gmail.com\",\n    \"password\": \"ahmed200320\",\n    \"password_confirmation\": \"ahmed200320\",\n    \"role\": \"teacher\"\n}"
+        },
+        "url": {
+         "raw": "{{base_url}}/register",
+         "host": [
+          "{{base_url}}"
+         ],
+         "path": [
+          "register"
+         ]
+        },
+        "description": "تسجيل مستخدم جديد (student أو teacher). برجع token جاهز لل استخدام."
+       }
+      },
+      {
+       "name": "login",
+       "request": {
+        "auth": {
+         "type": "noauth"
+        },
+        "method": "POST",
+        "header": [
+         {
+          "key": "Content-Type",
+          "value": "application/json"
+         }
+        ],
+        "body": {
+         "mode": "raw",
+         "raw": "{\n    \"email\": \"ahmed@gmail.com\",\n    \"password\": \"ahmed200320\"\n}"
+        },
+        "url": {
+         "raw": "{{base_url}}/login",
+         "host": [
+          "{{base_url}}"
+         ],
+         "path": [
+          "login"
+         ]
+        },
+        "description": "دخول — محمي بـ rate limit (5 محاولات في الدقيقة). انسخ token من الرد وحطه في متغير {{token}}."
+       }
+      },
+      {
+       "name": "logout",
+       "request": {
+        "method": "POST",
+        "url": {
+         "raw": "{{base_url}}/logout",
+         "host": [
+          "{{base_url}}"
+         ],
+         "path": [
+          "logout"
+         ]
+        },
+        "description": "خروج — بيحذف التوكن الحالي فقط."
+       }
+      },
+      {
+       "name": "forgot-password",
+       "request": {
+        "auth": {
+         "type": "noauth"
+        },
+        "method": "POST",
+        "header": [
+         {
+          "key": "Content-Type",
+          "value": "application/json"
+         }
+        ],
+        "body": {
+         "mode": "raw",
+         "raw": "{\n    \"email\": \"ahmed@gmail.com\"\n}"
+        },
+        "url": {
+         "raw": "{{base_url}}/forgot-password",
+         "host": [
+          "{{base_url}}"
+         ],
+         "path": [
+          "forgot-password"
+         ]
+        },
+        "description": "إرسال لينك إعادة تعيين كلمة السر على الإيميل. الرد دايماً 200 بنفس الرسالة (حماية من اكتشاف الإيميلات المسجلة). في التطوير المحلي اللينك بيتكتب في laravel.log."
+       }
+      },
+      {
+       "name": "reset-password",
+       "request": {
+        "auth": {
+         "type": "noauth"
+        },
+        "method": "POST",
+        "header": [
+         {
+          "key": "Content-Type",
+          "value": "application/json"
+         }
+        ],
+        "body": {
+         "mode": "raw",
+         "raw": "{\n    \"token\": \"التوكن-الواصل-بالإيميل\",\n    \"email\": \"ahmed@gmail.com\",\n    \"password\": \"new-password-123\",\n    \"password_confirmation\": \"new-password-123\"\n}"
+        },
+        "url": {
+         "raw": "{{base_url}}/reset-password",
+         "host": [
+          "{{base_url}}"
+         ],
+         "path": [
+          "reset-password"
+         ]
+        },
+        "description": "تعيين كلمة سر جديدة باستخدام التوكن الواصل بالإيميل."
+       }
+      },
+      {
+       "name": "send-verification-email",
+       "request": {
+        "method": "POST",
+        "url": {
+         "raw": "{{base_url}}/email/verification-notification",
+         "host": [
+          "{{base_url}}"
+         ],
+         "path": [
+          "email",
+          "verification-notification"
+         ]
+        },
+        "description": "إعادة إرسال لينك تفعيل الإيميل للمستخدم المسجل دخوله."
+       }
+      },
+      {
+       "name": "verify-email (signed link)",
+       "request": {
+        "auth": {
+         "type": "noauth"
+        },
+        "method": "GET",
+        "url": {
+         "raw": "{{base_url}}/email/verify/1/هاش-الإيميل?expires=123&signature=abc",
+         "host": [
+          "{{base_url}}"
+         ],
+         "path": [
+          "email",
+          "verify",
+          "1",
+          "هاش-الإيميل"
+         ],
+         "query": [
+          {
+           "key": "expires",
+           "value": "123"
+          },
+          {
+           "key": "signature",
+           "value": "abc"
+          }
+         ]
+        },
+        "description": "تفعيل الإيميل عبر اللينك الموقّع (signed URL) — بتاخده كامل من إيميل التسجيل، مش محتاج تسجيل دخول."
+       }
+      }
+     ]
+    },
+    {
+     "name": "profile",
+     "item": [
+      {
+       "name": "show profile",
+       "request": {
+        "method": "GET",
+        "url": {
+         "raw": "{{base_url}}/profile",
+         "host": [
+          "{{base_url}}"
+         ],
+         "path": [
+          "profile"
+         ]
+        },
+        "description": "الملف الشخصي + إحصائيات حسب الدور + كورسات المستخدم."
+       }
+      },
+      {
+       "name": "update profile",
+       "request": {
+        "method": "PUT",
+        "header": [
+         {
+          "key": "Content-Type",
+          "value": "application/json"
+         }
+        ],
+        "body": {
+         "mode": "raw",
+         "raw": "{\n    \"phone\": \"+201000000000\",\n    \"bio\": \"Backend developer\",\n    \"date_of_birth\": \"2000-01-01\",\n    \"gender\": \"male\",\n    \"country\": \"Egypt\",\n    \"city\": \"Cairo\",\n    \"github_url\": \"https://github.com/username\",\n    \"linkedin_url\": \"https://linkedin.com/in/username\",\n    \"website_url\": \"https://example.com\"\n}"
+        },
+        "url": {
+         "raw": "{{base_url}}/profile",
+         "host": [
+          "{{base_url}}"
+         ],
+         "path": [
+          "profile"
+         ]
+        }
+       }
+      },
+      {
+       "name": "upload avatar",
+       "request": {
+        "method": "POST",
+        "body": {
+         "mode": "formdata",
+         "formdata": [
+          {
+           "key": "avatar",
+           "type": "file",
+           "src": [],
+           "description": "jpg / jpeg / png / webp — بحد أقصى 2MB"
+          }
+         ]
+        },
+        "url": {
+         "raw": "{{base_url}}/profile/avatar",
+         "host": [
+          "{{base_url}}"
+         ],
+         "path": [
+          "profile",
+          "avatar"
+         ]
+        }
+       }
+      },
+      {
+       "name": "delete avatar",
+       "request": {
+        "method": "DELETE",
+        "url": {
+         "raw": "{{base_url}}/profile/avatar",
+         "host": [
+          "{{base_url}}"
+         ],
+         "path": [
+          "profile",
+          "avatar"
+         ]
+        }
+       }
+      }
+     ]
+    },
+    {
+     "name": "courses",
+     "item": [
+      {
+       "name": "list courses",
+       "request": {
+        "method": "GET",
+        "url": {
+         "raw": "{{base_url}}/courses?per_page=10",
+         "host": [
+          "{{base_url}}"
+         ],
+         "path": [
+          "courses"
+         ],
+         "query": [
+          {
+           "key": "per_page",
+           "value": "10",
+           "description": "1-100"
+          }
+         ]
+        },
+        "description": "كل الكورسات — مقسمة صفحات (pagination)."
+       }
+      },
+      {
+       "name": "show course",
+       "request": {
+        "method": "GET",
+        "url": {
+         "raw": "{{base_url}}/courses/{{course_id}}",
+         "host": [
+          "{{base_url}}"
+         ],
+         "path": [
+          "courses",
+          "{{course_id}}"
+         ]
+        }
+       }
+      },
+      {
+       "name": "create course (teacher)",
+       "request": {
+        "method": "POST",
+        "header": [
+         {
+          "key": "Content-Type",
+          "value": "application/json"
+         }
+        ],
+        "body": {
+         "mode": "raw",
+         "raw": "{\n    \"title\": \"Laravel Basics\",\n    \"description\": \"Learn Laravel from scratch\"\n}"
+        },
+        "url": {
+         "raw": "{{base_url}}/courses",
+         "host": [
+          "{{base_url}}"
+         ],
+         "path": [
+          "courses"
+         ]
+        }
+       }
+      },
+      {
+       "name": "update course (owner or admin)",
+       "request": {
+        "method": "PUT",
+        "header": [
+         {
+          "key": "Content-Type",
+          "value": "application/json"
+         }
+        ],
+        "body": {
+         "mode": "raw",
+         "raw": "{\n    \"title\": \"Updated title\"\n}"
+        },
+        "url": {
+         "raw": "{{base_url}}/courses/{{course_id}}",
+         "host": [
+          "{{base_url}}"
+         ],
+         "path": [
+          "courses",
+          "{{course_id}}"
+         ]
+        }
+       }
+      },
+      {
+       "name": "delete course (owner or admin)",
+       "request": {
+        "method": "DELETE",
+        "url": {
+         "raw": "{{base_url}}/courses/{{course_id}}",
+         "host": [
+          "{{base_url}}"
+         ],
+         "path": [
+          "courses",
+          "{{course_id}}"
+         ]
+        }
+       }
+      },
+      {
+       "name": "course students (teacher)",
+       "request": {
+        "method": "GET",
+        "url": {
+         "raw": "{{base_url}}/courses/{{course_id}}/students",
+         "host": [
+          "{{base_url}}"
+         ],
+         "path": [
+          "courses",
+          "{{course_id}}",
+          "students"
+         ]
+        }
+       }
+      },
+      {
+       "name": "my courses",
+       "request": {
+        "method": "GET",
+        "url": {
+         "raw": "{{base_url}}/my-courses",
+         "host": [
+          "{{base_url}}"
+         ],
+         "path": [
+          "my-courses"
+         ]
+        },
+        "description": "المدرس: كورساته — الطالب: الكورسات المسجل بها."
+       }
+      },
+      {
+       "name": "my course details",
+       "request": {
+        "method": "GET",
+        "url": {
+         "raw": "{{base_url}}/my-courses/{{course_id}}",
+         "host": [
+          "{{base_url}}"
+         ],
+         "path": [
+          "my-courses",
+          "{{course_id}}"
+         ]
+        }
+       }
+      },
+      {
+       "name": "join course (student)",
+       "request": {
+        "method": "POST",
+        "url": {
+         "raw": "{{base_url}}/courses/{{course_id}}/join",
+         "host": [
+          "{{base_url}}"
+         ],
+         "path": [
+          "courses",
+          "{{course_id}}",
+          "join"
+         ]
+        }
+       }
+      },
+      {
+       "name": "leave course (student)",
+       "request": {
+        "method": "DELETE",
+        "url": {
+         "raw": "{{base_url}}/courses/{{course_id}}/leave",
+         "host": [
+          "{{base_url}}"
+         ],
+         "path": [
+          "courses",
+          "{{course_id}}",
+          "leave"
+         ]
+        }
+       }
+      },
+      {
+       "name": "list courses (search + teacher filter)",
+       "request": {
+        "method": "GET",
+        "url": {
+         "raw": "{{base_url}}/courses?search=php&teacher_id=&page=1&per_page=15",
+         "host": [
+          "{{base_url}}"
+         ],
+         "path": [
+          "courses"
+         ],
+         "query": [
+          {
+           "key": "search",
+           "value": "php",
+           "description": "بحث جزئي في العنوان والوصف"
+          },
+          {
+           "key": "teacher_id",
+           "value": "",
+           "description": "فلتر بالمدرس"
+          },
+          {
+           "key": "page",
+           "value": "1"
+          },
+          {
+           "key": "per_page",
+           "value": "15",
+           "description": "1-100"
+          }
+         ]
+        },
+        "description": "كتالوج الكورسات مع بحث وفلاتر."
+       }
+      }
+     ]
+    },
+    {
+     "name": "lessons",
+     "item": [
+      {
+       "name": "create lesson (teacher)",
+       "request": {
+        "method": "POST",
+        "header": [
+         {
+          "key": "Content-Type",
+          "value": "application/json"
+         }
+        ],
+        "body": {
+         "mode": "raw",
+         "raw": "{\n    \"title\": \"Chapter 1\",\n    \"description\": \"Introduction\",\n    \"lesson_date\": \"2026-09-20 15:00:00\"\n}"
+        },
+        "url": {
+         "raw": "{{base_url}}/courses/{{course_id}}/lessons",
+         "host": [
+          "{{base_url}}"
+         ],
+         "path": [
+          "courses",
+          "{{course_id}}",
+          "lessons"
+         ]
+        }
+       }
+      },
+      {
+       "name": "update lesson (teacher)",
+       "request": {
+        "method": "PUT",
+        "header": [
+         {
+          "key": "Content-Type",
+          "value": "application/json"
+         }
+        ],
+        "body": {
+         "mode": "raw",
+         "raw": "{\n    \"title\": \"Chapter 1 — updated\",\n    \"lesson_date\": \"2026-09-21 15:00:00\"\n}"
+        },
+        "url": {
+         "raw": "{{base_url}}/lessons/{{lesson_id}}",
+         "host": [
+          "{{base_url}}"
+         ],
+         "path": [
+          "lessons",
+          "{{lesson_id}}"
+         ]
+        }
+       }
+      },
+      {
+       "name": "delete lesson (teacher)",
+       "request": {
+        "method": "DELETE",
+        "url": {
+         "raw": "{{base_url}}/lessons/{{lesson_id}}",
+         "host": [
+          "{{base_url}}"
+         ],
+         "path": [
+          "lessons",
+          "{{lesson_id}}"
+         ]
+        }
+       }
+      },
+      {
+       "name": "my lessons",
+       "request": {
+        "method": "GET",
+        "url": {
+         "raw": "{{base_url}}/my-lessons?per_page=10",
+         "host": [
+          "{{base_url}}"
+         ],
+         "path": [
+          "my-lessons"
+         ],
+         "query": [
+          {
+           "key": "per_page",
+           "value": "10"
+          }
+         ]
+        }
+       }
+      },
+      {
+       "name": "my lesson details",
+       "request": {
+        "method": "GET",
+        "url": {
+         "raw": "{{base_url}}/my-lessons/{{lesson_id}}",
+         "host": [
+          "{{base_url}}"
+         ],
+         "path": [
+          "my-lessons",
+          "{{lesson_id}}"
+         ]
+        }
+       }
+      },
+      {
+       "name": "lesson students (teacher)",
+       "request": {
+        "method": "GET",
+        "url": {
+         "raw": "{{base_url}}/lessons/{{lesson_id}}/students",
+         "host": [
+          "{{base_url}}"
+         ],
+         "path": [
+          "lessons",
+          "{{lesson_id}}",
+          "students"
+         ]
+        }
+       }
+      },
+      {
+       "name": "upcoming lessons (role-scoped)",
+       "request": {
+        "method": "GET",
+        "url": {
+         "raw": "{{base_url}}/lessons/upcoming?course_id={{course_id}}&date_from=&date_to=&per_page=15",
+         "host": [
+          "{{base_url}}"
+         ],
+         "path": [
+          "lessons",
+          "upcoming"
+         ],
+         "query": [
+          {
+           "key": "course_id",
+           "value": "{{course_id}}"
+          },
+          {
+           "key": "date_from",
+           "value": "",
+           "description": "YYYY-MM-DD"
+          },
+          {
+           "key": "date_to",
+           "value": "",
+           "description": "YYYY-MM-DD"
+          },
+          {
+           "key": "per_page",
+           "value": "15"
+          }
+         ]
+        },
+        "description": "الدروس القادمة — student: كورساته، teacher: كورساته، admin/secretary: الكل. كل درس فيه start_time/end_time/location/delivery_type/status (upcoming|past)."
+       }
+      },
+      {
+       "name": "create lesson (with schedule)",
+       "request": {
+        "method": "POST",
+        "header": [
+         {
+          "key": "Content-Type",
+          "value": "application/json"
+         }
+        ],
+        "body": {
+         "mode": "raw",
+         "raw": "{\n    \"title\": \"Chapter 3 — Online\",\n    \"lesson_date\": \"2026-09-25\",\n    \"start_time\": \"18:00\",\n    \"end_time\": \"20:00\",\n    \"location\": \"Zoom\",\n    \"delivery_type\": \"online\"\n}"
+        },
+        "url": {
+         "raw": "{{base_url}}/courses/{{course_id}}/lessons",
+         "host": [
+          "{{base_url}}"
+         ],
+         "path": [
+          "courses",
+          "{{course_id}}",
+          "lessons"
+         ]
+        },
+        "description": "إنشاء درس مع جدولته: start_time/end_time (H:i) + location + delivery_type (onsite|online)."
+       }
+      }
+     ]
+    },
+    {
+     "name": "materials",
+     "item": [
+      {
+       "name": "list lesson materials",
+       "request": {
+        "method": "GET",
+        "url": {
+         "raw": "{{base_url}}/lessons/{{lesson_id}}/materials",
+         "host": [
+          "{{base_url}}"
+         ],
+         "path": [
+          "lessons",
+          "{{lesson_id}}",
+          "materials"
+         ]
+        }
+       }
+      },
+      {
+       "name": "upload material file (teacher)",
+       "request": {
+        "method": "POST",
+        "body": {
+         "mode": "formdata",
+         "formdata": [
+          {
+           "key": "title",
+           "value": "Lecture PDF",
+           "type": "text"
+          },
+          {
+           "key": "file",
+           "type": "file",
+           "src": [],
+           "description": "pdf, doc(x), ppt(x), zip, jpg, png — بحد أقصى 100MB"
+          }
+         ]
+        },
+        "url": {
+         "raw": "{{base_url}}/lessons/{{lesson_id}}/materials",
+         "host": [
+          "{{base_url}}"
+         ],
+         "path": [
+          "lessons",
+          "{{lesson_id}}",
+          "materials"
+         ]
+        }
+       }
+      },
+      {
+       "name": "add material link (teacher)",
+       "request": {
+        "method": "POST",
+        "header": [
+         {
+          "key": "Content-Type",
+          "value": "application/json"
+         }
+        ],
+        "body": {
+         "mode": "raw",
+         "raw": "{\n    \"title\": \"YouTube lesson\",\n    \"external_url\": \"https://youtube.com/watch?v=xxx\"\n}"
+        },
+        "url": {
+         "raw": "{{base_url}}/lessons/{{lesson_id}}/materials",
+         "host": [
+          "{{base_url}}"
+         ],
+         "path": [
+          "lessons",
+          "{{lesson_id}}",
+          "materials"
+         ]
+        }
+       }
+      },
+      {
+       "name": "update material (teacher)",
+       "request": {
+        "method": "POST",
+        "header": [
+         {
+          "key": "Content-Type",
+          "value": "application/json"
+         }
+        ],
+        "body": {
+         "mode": "raw",
+         "raw": "{\n    \"title\": \"Updated title\"\n}"
+        },
+        "url": {
+         "raw": "{{base_url}}/materials/{{material_id}}",
+         "host": [
+          "{{base_url}}"
+         ],
+         "path": [
+          "materials",
+          "{{material_id}}"
+         ]
+        },
+        "description": "يدعم POST و PUT — ممكن ترفع file أو تبعت external_url أو تغير العنوان بس."
+       }
+      },
+      {
+       "name": "delete material (teacher)",
+       "request": {
+        "method": "DELETE",
+        "url": {
+         "raw": "{{base_url}}/materials/{{material_id}}",
+         "host": [
+          "{{base_url}}"
+         ],
+         "path": [
+          "materials",
+          "{{material_id}}"
+         ]
+        }
+       }
+      },
+      {
+       "name": "download material",
+       "request": {
+        "method": "GET",
+        "url": {
+         "raw": "{{base_url}}/materials/{{material_id}}/download",
+         "host": [
+          "{{base_url}}"
+         ],
+         "path": [
+          "materials",
+          "{{material_id}}",
+          "download"
+         ]
+        },
+        "description": "لو المادة لينك خارجي بيرجع JSON فيه url، ولو ملف بينزله مباشرة."
+       }
+      }
+     ]
+    },
+    {
+     "name": "exam",
+     "item": [
+      {
+       "name": "create exam (teacher)",
+       "request": {
+        "method": "POST",
+        "header": [
+         {
+          "key": "Content-Type",
+          "value": "application/json"
+         }
+        ],
+        "body": {
+         "mode": "raw",
+         "raw": "{\n    \"title\": \"Midterm Exam\",\n    \"description\": \"Chapters 1-3\",\n    \"start_time\": \"2026-09-15 10:00:00\",\n    \"end_time\": \"2026-09-15 13:00:00\",\n    \"duration\": 60,\n    \"total_marks\": 10,\n    \"pass_mark\": 50\n}"
+        },
+        "url": {
+         "raw": "{{base_url}}/courses/{{course_id}}/exams",
+         "host": [
+          "{{base_url}}"
+         ],
+         "path": [
+          "courses",
+          "{{course_id}}",
+          "exams"
+         ]
+        },
+        "description": "pass_mark جديد: نسبة النجاح % لكل امتحان (default 50)."
+       }
+      },
+      {
+       "name": "update exam (teacher)",
+       "request": {
+        "method": "PUT",
+        "header": [
+         {
+          "key": "Content-Type",
+          "value": "application/json"
+         }
+        ],
+        "body": {
+         "mode": "raw",
+         "raw": "{\n    \"title\": \"Midterm Exam — updated\",\n    \"start_time\": \"2026-09-15 10:00:00\",\n    \"end_time\": \"2026-09-15 13:00:00\",\n    \"duration\": 60,\n    \"total_marks\": 10,\n    \"pass_mark\": 40\n}"
+        },
+        "url": {
+         "raw": "{{base_url}}/exams/{{exam_id}}",
+         "host": [
+          "{{base_url}}"
+         ],
+         "path": [
+          "exams",
+          "{{exam_id}}"
+         ]
+        }
+       }
+      },
+      {
+       "name": "delete exam (teacher)",
+       "request": {
+        "method": "DELETE",
+        "url": {
+         "raw": "{{base_url}}/exams/{{exam_id}}",
+         "host": [
+          "{{base_url}}"
+         ],
+         "path": [
+          "exams",
+          "{{exam_id}}"
+         ]
+        }
+       }
+      },
+      {
+       "name": "my exams (renamed from /myExams)",
+       "request": {
+        "method": "GET",
+        "url": {
+         "raw": "{{base_url}}/my-exams?per_page=10",
+         "host": [
+          "{{base_url}}"
+         ],
+         "path": [
+          "my-exams"
+         ],
+         "query": [
+          {
+           "key": "per_page",
+           "value": "10"
+          }
+         ]
+        },
+        "description": "التسمية اتغيرت من /myExams إلى /my-exams — مقسمة صفحات ومحصورة حسب الدور."
+       }
+      },
+      {
+       "name": "my exam details (renamed from /myExamDetails)",
+       "request": {
+        "method": "GET",
+        "url": {
+         "raw": "{{base_url}}/my-exams/{{exam_id}}",
+         "host": [
+          "{{base_url}}"
+         ],
+         "path": [
+          "my-exams",
+          "{{exam_id}}"
+         ]
+        }
+       }
+      },
+      {
+       "name": "start exam (student) — جديد",
+       "request": {
+        "method": "POST",
+        "url": {
+         "raw": "{{base_url}}/exams/{{exam_id}}/start",
+         "host": [
+          "{{base_url}}"
+         ],
+         "path": [
+          "exams",
+          "{{exam_id}}",
+          "start"
+         ]
+        },
+        "description": "جديد: الطالب يبدأ الامتحان — بيتسجل وقت البدء ويرجع deadline (وقت البدء + duration) و time_remaining بالثواني. لازم تبدأ قبل ما تجاوب أو تسلم."
+       }
+      },
+      {
+       "name": "exam questions",
+       "request": {
+        "method": "GET",
+        "url": {
+         "raw": "{{base_url}}/exams/{{exam_id}}/questions?per_page=10",
+         "host": [
+          "{{base_url}}"
+         ],
+         "path": [
+          "exams",
+          "{{exam_id}}",
+          "questions"
+         ],
+         "query": [
+          {
+           "key": "per_page",
+           "value": "10"
+          }
+         ]
+        },
+        "description": "أسئلة الامتحان — من غير correct_answer (مش بتتسرب للطالب)."
+       }
+      },
+      {
+       "name": "exam results (teacher)",
+       "request": {
+        "method": "GET",
+        "url": {
+         "raw": "{{base_url}}/exams/{{exam_id}}/results",
+         "host": [
+          "{{base_url}}"
+         ],
+         "path": [
+          "exams",
+          "{{exam_id}}",
+          "results"
+         ]
+        }
+       }
+      }
+     ]
+    },
+    {
+     "name": "question",
+     "item": [
+      {
+       "name": "add question (teacher)",
+       "request": {
+        "method": "POST",
+        "header": [
+         {
+          "key": "Content-Type",
+          "value": "application/json"
+         }
+        ],
+        "body": {
+         "mode": "raw",
+         "raw": "{\n    \"question_text\": \"What does ORM stand for?\",\n    \"option_a\": \"Object Relational Mapping\",\n    \"option_b\": \"Online Routing Manager\",\n    \"option_c\": \"Object Relation Manager\",\n    \"option_d\": \"None\",\n    \"correct_answer\": \"a\",\n    \"marks\": 5\n}"
+        },
+        "url": {
+         "raw": "{{base_url}}/exams/{{exam_id}}/questions",
+         "host": [
+          "{{base_url}}"
+         ],
+         "path": [
+          "exams",
+          "{{exam_id}}",
+          "questions"
+         ]
+        }
+       }
+      },
+      {
+       "name": "update question (teacher)",
+       "request": {
+        "method": "PUT",
+        "header": [
+         {
+          "key": "Content-Type",
+          "value": "application/json"
+         }
+        ],
+        "body": {
+         "mode": "raw",
+         "raw": "{\n    \"marks\": 10\n}"
+        },
+        "url": {
+         "raw": "{{base_url}}/questions/{{question_id}}",
+         "host": [
+          "{{base_url}}"
+         ],
+         "path": [
+          "questions",
+          "{{question_id}}"
+         ]
+        }
+       }
+      },
+      {
+       "name": "delete question (teacher)",
+       "request": {
+        "method": "DELETE",
+        "url": {
+         "raw": "{{base_url}}/questions/{{question_id}}",
+         "host": [
+          "{{base_url}}"
+         ],
+         "path": [
+          "questions",
+          "{{question_id}}"
+         ]
+        }
+       }
+      }
+     ]
+    },
+    {
+     "name": "Student Answer",
+     "item": [
+      {
+       "name": "answer question (student)",
+       "request": {
+        "method": "POST",
+        "header": [
+         {
+          "key": "Content-Type",
+          "value": "application/json"
+         }
+        ],
+        "body": {
+         "mode": "raw",
+         "raw": "{\n    \"student_answer\": \"a\"\n}"
+        },
+        "url": {
+         "raw": "{{base_url}}/questions/{{question_id}}/answer",
+         "host": [
+          "{{base_url}}"
+         ],
+         "path": [
+          "questions",
+          "{{question_id}}",
+          "answer"
+         ]
+        },
+        "description": "جديد: لازم الطالب يبدأ الامتحان (start) الأول، وإلا 400. لو وقت المحاولة خلص مينفعش يجاوب."
+       }
+      }
+     ]
+    },
+    {
+     "name": "Result",
+     "item": [
+      {
+       "name": "submit exam (student)",
+       "request": {
+        "method": "POST",
+        "url": {
+         "raw": "{{base_url}}/exams/{{exam_id}}/submit",
+         "host": [
+          "{{base_url}}"
+         ],
+         "path": [
+          "exams",
+          "{{exam_id}}",
+          "submit"
+         ]
+        },
+        "description": "تسليم الامتحان والتصحيح التلقائي. النجاح بيتحدد بـ pass_mark الخاص بالامتحان (نسبة %) مش 50% ثابتة."
+       }
+      },
+      {
+       "name": "my results (renamed from /myResults)",
+       "request": {
+        "method": "GET",
+        "url": {
+         "raw": "{{base_url}}/my-results?per_page=10",
+         "host": [
+          "{{base_url}}"
+         ],
+         "path": [
+          "my-results"
+         ],
+         "query": [
+          {
+           "key": "per_page",
+           "value": "10"
+          }
+         ]
+        }
+       }
+      },
+      {
+       "name": "results listing (role-scoped + filters)",
+       "request": {
+        "method": "GET",
+        "url": {
+         "raw": "{{base_url}}/results?course_id={{course_id}}&status=passed&min_score=50&per_page=15",
+         "host": [
+          "{{base_url}}"
+         ],
+         "path": [
+          "results"
+         ],
+         "query": [
+          {
+           "key": "student_id",
+           "value": ""
+          },
+          {
+           "key": "exam_id",
+           "value": ""
+          },
+          {
+           "key": "course_id",
+           "value": "{{course_id}}"
+          },
+          {
+           "key": "status",
+           "value": "passed",
+           "description": "passed / failed"
+          },
+          {
+           "key": "min_score",
+           "value": "50"
+          },
+          {
+           "key": "max_score",
+           "value": ""
+          },
+          {
+           "key": "date_from",
+           "value": ""
+          },
+          {
+           "key": "date_to",
+           "value": ""
+          },
+          {
+           "key": "per_page",
+           "value": "15"
+          }
+         ]
+        },
+        "description": "النتايج — student: نتايجه، teacher: كورساته، admin/secretary: الكل."
+       }
+      }
+     ]
+    },
+    {
+     "name": "attendance",
+     "item": [
+      {
+       "name": "record attendance (teacher)",
+       "request": {
+        "method": "POST",
+        "header": [
+         {
+          "key": "Content-Type",
+          "value": "application/json"
+         }
+        ],
+        "body": {
+         "mode": "raw",
+         "raw": "{\n    \"students\": [\n        { \"student_id\": 1, \"status\": \"present\" },\n        { \"student_id\": 2, \"status\": \"late\" }\n    ]\n}"
+        },
+        "url": {
+         "raw": "{{base_url}}/lessons/{{lesson_id}}/attendance",
+         "host": [
+          "{{base_url}}"
+         ],
+         "path": [
+          "lessons",
+          "{{lesson_id}}",
+          "attendance"
+         ]
+        }
+       }
+      },
+      {
+       "name": "lesson attendance (teacher)",
+       "request": {
+        "method": "GET",
+        "url": {
+         "raw": "{{base_url}}/lessons/{{lesson_id}}/attendance",
+         "host": [
+          "{{base_url}}"
+         ],
+         "path": [
+          "lessons",
+          "{{lesson_id}}",
+          "attendance"
+         ]
+        }
+       }
+      },
+      {
+       "name": "my attendance (student)",
+       "request": {
+        "method": "GET",
+        "url": {
+         "raw": "{{base_url}}/my-attendance",
+         "host": [
+          "{{base_url}}"
+         ],
+         "path": [
+          "my-attendance"
+         ]
+        }
+       }
+      },
+      {
+       "name": "attendance listing (role-scoped + filters)",
+       "request": {
+        "method": "GET",
+        "url": {
+         "raw": "{{base_url}}/attendance?student_id=&course_id={{course_id}}&status=absent&date_from=2026-09-01&date_to=2026-09-30&per_page=15",
+         "host": [
+          "{{base_url}}"
+         ],
+         "path": [
+          "attendance"
+         ],
+         "query": [
+          {
+           "key": "student_id",
+           "value": ""
+          },
+          {
+           "key": "course_id",
+           "value": "{{course_id}}"
+          },
+          {
+           "key": "lesson_id",
+           "value": ""
+          },
+          {
+           "key": "status",
+           "value": "absent",
+           "description": "present / absent / late"
+          },
+          {
+           "key": "date_from",
+           "value": "2026-09-01",
+           "description": "على lesson_date"
+          },
+          {
+           "key": "date_to",
+           "value": "2026-09-30"
+          },
+          {
+           "key": "per_page",
+           "value": "15"
+          }
+         ]
+        },
+        "description": "سجل الحضور — student: سجله، teacher: كورساته، admin/secretary: الكل."
+       }
+      }
+     ]
+    },
+    {
+     "name": "notifications",
+     "item": [
+      {
+       "name": "list notifications",
+       "request": {
+        "method": "GET",
+        "url": {
+         "raw": "{{base_url}}/notifications?per_page=10&unread=1",
+         "host": [
+          "{{base_url}}"
+         ],
+         "path": [
+          "notifications"
+         ],
+         "query": [
+          {
+           "key": "per_page",
+           "value": "10"
+          },
+          {
+           "key": "unread",
+           "value": "1",
+           "description": "اختياري: غير المقروءة فقط"
+          }
+         ]
+        }
+       }
+      },
+      {
+       "name": "mark as read",
+       "request": {
+        "method": "PATCH",
+        "url": {
+         "raw": "{{base_url}}/notifications/{{notification_id}}/read",
+         "host": [
+          "{{base_url}}"
+         ],
+         "path": [
+          "notifications",
+          "{{notification_id}}",
+          "read"
+         ]
+        }
+       }
+      },
+      {
+       "name": "mark all as read",
+       "request": {
+        "method": "PATCH",
+        "url": {
+         "raw": "{{base_url}}/notifications/read-all",
+         "host": [
+          "{{base_url}}"
+         ],
+         "path": [
+          "notifications",
+          "read-all"
+         ]
+        }
+       }
+      }
+     ]
+    },
+    {
+     "name": "dashboard",
+     "item": [
+      {
+       "name": "dashboard",
+       "request": {
+        "method": "GET",
+        "url": {
+         "raw": "{{base_url}}/dashboard",
+         "host": [
+          "{{base_url}}"
+         ],
+         "path": [
+          "dashboard"
+         ]
+        },
+        "description": "إحصائيات حسب الدور — جديد: الأدمن ليه dashboard خاص بعدد المدرسين والطلاب والكورسات."
+       }
+      }
+     ]
+    },
+    {
+     "name": "admin — نظام التحكم الكامل",
+     "item": [
+      {
+       "name": "list users (role / search / pagination)",
+       "request": {
+        "method": "GET",
+        "url": {
+         "raw": "{{base_url}}/admin/users?role=student&search=&per_page=15",
+         "host": [
+          "{{base_url}}"
+         ],
+         "path": [
+          "admin",
+          "users"
+         ],
+         "query": [
+          {
+           "key": "role",
+           "value": "student",
+           "description": "admin / teacher / student (اختياري)"
+          },
+          {
+           "key": "search",
+           "value": "",
+           "description": "بحث بالاسم أو الإيميل"
+          },
+          {
+           "key": "per_page",
+           "value": "15"
+          }
+         ]
+        },
+        "description": "كل مستخدمي السنتر مع فلترة وبحث و pagination."
+       }
+      },
+      {
+       "name": "show user",
+       "request": {
+        "method": "GET",
+        "url": {
+         "raw": "{{base_url}}/admin/users/1",
+         "host": [
+          "{{base_url}}"
+         ],
+         "path": [
+          "admin",
+          "users",
+          "1"
+         ]
+        },
+        "description": "تفاصيل مستخدم + إحصائياته (كورساته، نتايجه، حضورة)."
+       }
+      },
+      {
+       "name": "create user (any role)",
+       "request": {
+        "method": "POST",
+        "header": [
+         {
+          "key": "Content-Type",
+          "value": "application/json"
+         }
+        ],
+        "body": {
+         "mode": "raw",
+         "raw": "{\n    \"name\": \"New Teacher\",\n    \"email\": \"new.teacher@example.com\",\n    \"password\": \"secret1234\",\n    \"role\": \"teacher\"\n}"
+        },
+        "url": {
+         "raw": "{{base_url}}/admin/users",
+         "host": [
+          "{{base_url}}"
+         ],
+         "path": [
+          "admin",
+          "users"
+         ]
+        },
+        "description": "الأدمن هو الوحيد اللي يقدر ينشئ admin — الواجهة العامة بتسمح student/teacher بس."
+       }
+      },
+      {
+       "name": "update user (name / email / role / password)",
+       "request": {
+        "method": "PUT",
+        "header": [
+         {
+          "key": "Content-Type",
+          "value": "application/json"
+         }
+        ],
+        "body": {
+         "mode": "raw",
+         "raw": "{\n    \"role\": \"teacher\"\n}"
+        },
+        "url": {
+         "raw": "{{base_url}}/admin/users/1",
+         "host": [
+          "{{base_url}}"
+         ],
+         "path": [
+          "admin",
+          "users",
+          "1"
+         ]
+        },
+        "description": "ترقية/تخفيض دور أي مستخدم أو تعديل بياناته. الأدمن مش يقدر يغير دوره بنفسه."
+       }
+      },
+      {
+       "name": "delete user",
+       "request": {
+        "method": "DELETE",
+        "url": {
+         "raw": "{{base_url}}/admin/users/1",
+         "host": [
+          "{{base_url}}"
+         ],
+         "path": [
+          "admin",
+          "users",
+          "1"
+         ]
+        },
+        "description": "حذف مستخدم وكل بياناته. لو مدرس، كورساته ودروسها وامتحاناتها بتتمسح معاه. مينفعش تحذف حسابك."
+       }
+      },
+      {
+       "name": "create course for teacher",
+       "request": {
+        "method": "POST",
+        "header": [
+         {
+          "key": "Content-Type",
+          "value": "application/json"
+         }
+        ],
+        "body": {
+         "mode": "raw",
+         "raw": "{\n    \"title\": \"Math 101\",\n    \"description\": \"Algebra basics\",\n    \"teacher_id\": 1\n}"
+        },
+        "url": {
+         "raw": "{{base_url}}/admin/courses",
+         "host": [
+          "{{base_url}}"
+         ],
+         "path": [
+          "admin",
+          "courses"
+         ]
+        },
+        "description": "الأدمن ينشئ كورس ويسنده لأي مدرس."
+       }
+      },
+      {
+       "name": "course students",
+       "request": {
+        "method": "GET",
+        "url": {
+         "raw": "{{base_url}}/admin/courses/{{course_id}}/students",
+         "host": [
+          "{{base_url}}"
+         ],
+         "path": [
+          "admin",
+          "courses",
+          "{{course_id}}",
+          "students"
+         ]
+        }
+       }
+      },
+      {
+       "name": "enroll students (force)",
+       "request": {
+        "method": "POST",
+        "header": [
+         {
+          "key": "Content-Type",
+          "value": "application/json"
+         }
+        ],
+        "body": {
+         "mode": "raw",
+         "raw": "{\n    \"student_ids\": [2, 3, 4]\n}"
+        },
+        "url": {
+         "raw": "{{base_url}}/admin/courses/{{course_id}}/students",
+         "host": [
+          "{{base_url}}"
+         ],
+         "path": [
+          "admin",
+          "courses",
+          "{{course_id}}",
+          "students"
+         ]
+        },
+        "description": "تسجيل طلاب في الكورس بالقوة (بدون ما الطالب يعمل join بنفسه)."
+       }
+      },
+      {
+       "name": "remove student (force)",
+       "request": {
+        "method": "DELETE",
+        "url": {
+         "raw": "{{base_url}}/admin/courses/{{course_id}}/students/2",
+         "host": [
+          "{{base_url}}"
+         ],
+         "path": [
+          "admin",
+          "courses",
+          "{{course_id}}",
+          "students",
+          "2"
+         ]
+        }
+       }
+      },
+      {
+       "name": "all results (exam / student / status filters)",
+       "request": {
+        "method": "GET",
+        "url": {
+         "raw": "{{base_url}}/admin/results?exam_id=&student_id=&status=failed&per_page=15",
+         "host": [
+          "{{base_url}}"
+         ],
+         "path": [
+          "admin",
+          "results"
+         ],
+         "query": [
+          {
+           "key": "exam_id",
+           "value": ""
+          },
+          {
+           "key": "student_id",
+           "value": ""
+          },
+          {
+           "key": "status",
+           "value": "failed",
+           "description": "passed / failed (اختياري)"
+          },
+          {
+           "key": "per_page",
+           "value": "15"
+          }
+         ]
+        },
+        "description": "كل نتايج السنتر مع فلاتر."
+       }
+      },
+      {
+       "name": "delete result (allow retake)",
+       "request": {
+        "method": "DELETE",
+        "url": {
+         "raw": "{{base_url}}/admin/results/1",
+         "host": [
+          "{{base_url}}"
+         ],
+         "path": [
+          "admin",
+          "results",
+          "1"
+         ]
+        },
+        "description": "حذف نتيجة — المحاولة بترجع مفتوحة والطالب يقدر يعيد الامتحان."
+       }
+      },
+      {
+       "name": "send notification to user",
+       "request": {
+        "method": "POST",
+        "header": [
+         {
+          "key": "Content-Type",
+          "value": "application/json"
+         }
+        ],
+        "body": {
+         "mode": "raw",
+         "raw": "{\n    \"user_id\": 2,\n    \"title\": \"Meeting\",\n    \"message\": \"Please visit the center tomorrow.\"\n}"
+        },
+        "url": {
+         "raw": "{{base_url}}/admin/notifications",
+         "host": [
+          "{{base_url}}"
+         ],
+         "path": [
+          "admin",
+          "notifications"
+         ]
+        }
+       }
+      },
+      {
+       "name": "broadcast notification",
+       "request": {
+        "method": "POST",
+        "header": [
+         {
+          "key": "Content-Type",
+          "value": "application/json"
+         }
+        ],
+        "body": {
+         "mode": "raw",
+         "raw": "{\n    \"role\": \"student\",\n    \"title\": \"Holiday\",\n    \"message\": \"Center closed next Sunday.\"\n}"
+        },
+        "url": {
+         "raw": "{{base_url}}/admin/notifications/broadcast",
+         "host": [
+          "{{base_url}}"
+         ],
+         "path": [
+          "admin",
+          "notifications",
+          "broadcast"
+         ]
+        },
+        "description": "بث إشعار للكل أو لدور معين (شيل role للبث للجميع). بيرجع recipients بعدد اللي وصلهم."
+       }
+      }
+     ]
+    },
+    {
+     "name": "finance",
+     "item": [
+      {
+       "name": "FULL FLOW EXAMPLE (read me)",
+       "request": {
+        "auth": {
+         "type": "noauth"
+        },
+        "method": "GET",
+        "url": {
+         "raw": "https://example.com",
+         "host": [
+          "https",
+          "example",
+          "com"
+         ]
+        },
+        "description": "الفلو الكامل الجاهز للتجربة بالترتيب:\n1) POST courses/{id}/fees → حدد سعر الكورس (أدمن)\n2) POST courses/{id}/join → الطالب ينضم = اشتراك تلقائي بالسعر الحالي\n3) POST charges/generate → ولّد فواتير الشهر (أدمن)\n4) POST payments → سجل دفعة جزئية (أدمن/سكرتير/مدرس الكورس)\n5) POST payments تاني → كمّل باقي المبلغ → الفاتورة paid\n6) دفعة أكبر من المتبقي → الزيادة credit للطالب تلقائياً\n7) GET students/{id} → الملف المالي الكامل للطالب\n8) GET courses/{id} → إحصائيات الكورس المالية\n9) GET dashboard → dashboard السنتر المالي\n10) GET overdue → مين عليه فلوس؟\n\nاختبار الصلاحيات:\n- سكرتير: secretary@test.com / 12345678 → يسجل دفعات، لكن تغيير أسعار أو توليد فواتير = 403\n- مدرس: دفعة لطالب في كورسه تمام — كورس غيره = 403\n- طالب: أي عملية مالية = 403"
+       }
+      },
+      {
+       "name": "set course fee (admin)",
+       "request": {
+        "method": "POST",
+        "header": [
+         {
+          "key": "Content-Type",
+          "value": "application/json"
+         }
+        ],
+        "body": {
+         "mode": "raw",
+         "raw": "{\n    \"monthly_fee\": 800,\n    \"effective_from\": \"2026-09-13\"\n}"
+        },
+        "url": {
+         "raw": "{{base_url}}/finance/courses/{{course_id}}/fees",
+         "host": [
+          "{{base_url}}"
+         ],
+         "path": [
+          "finance",
+          "courses",
+          "{{course_id}}",
+          "fees"
+         ]
+        },
+        "description": "تحديد/تغيير سعر الكورس — كل تغيير صف جديد (التاريخ القديم محفوظ). للأدمن فقط."
+       }
+      },
+      {
+       "name": "course fee history (admin)",
+       "request": {
+        "method": "GET",
+        "url": {
+         "raw": "{{base_url}}/finance/courses/{{course_id}}/fees",
+         "host": [
+          "{{base_url}}"
+         ],
+         "path": [
+          "finance",
+          "courses",
+          "{{course_id}}",
+          "fees"
+         ]
+        }
+       }
+      },
+      {
+       "name": "list subscriptions",
+       "request": {
+        "method": "GET",
+        "url": {
+         "raw": "{{base_url}}/finance/subscriptions?course_id={{course_id}}&status=active&per_page=15",
+         "host": [
+          "{{base_url}}"
+         ],
+         "path": [
+          "finance",
+          "subscriptions"
+         ],
+         "query": [
+          {
+           "key": "course_id",
+           "value": "{{course_id}}"
+          },
+          {
+           "key": "student_id",
+           "value": "",
+           "description": "اختياري"
+          },
+          {
+           "key": "status",
+           "value": "active",
+           "description": "active / paused / cancelled / completed"
+          },
+          {
+           "key": "per_page",
+           "value": "15"
+          }
+         ]
+        }
+       }
+      },
+      {
+       "name": "create subscription (admin)",
+       "request": {
+        "method": "POST",
+        "header": [
+         {
+          "key": "Content-Type",
+          "value": "application/json"
+         }
+        ],
+        "body": {
+         "mode": "raw",
+         "raw": "{\n    \"student_id\": 2,\n    \"course_id\": {{course_id}},\n    \"monthly_discount\": 100,\n    \"discount_reason\": \"Sibling discount\"\n}"
+        },
+        "url": {
+         "raw": "{{base_url}}/finance/subscriptions",
+         "host": [
+          "{{base_url}}"
+         ],
+         "path": [
+          "finance",
+          "subscriptions"
+         ]
+        },
+        "description": "اشتراك يدوي بخصم اختياري — لو مرمش monthly_fee هياخد سعر الكورس الحالي."
+       }
+      },
+      {
+       "name": "update subscription (pause/cancel/discount) (admin)",
+       "request": {
+        "method": "PUT",
+        "header": [
+         {
+          "key": "Content-Type",
+          "value": "application/json"
+         }
+        ],
+        "body": {
+         "mode": "raw",
+         "raw": "{\n    \"status\": \"cancelled\",\n    \"cancellation_reason\": \"Student relocated to another city\"\n}"
+        },
+        "url": {
+         "raw": "{{base_url}}/finance/subscriptions/1",
+         "host": [
+          "{{base_url}}"
+         ],
+         "path": [
+          "finance",
+          "subscriptions",
+          "1"
+         ]
+        },
+        "description": "status: active / paused / cancelled / completed — وتعديل الخصم بسبب."
+       }
+      },
+      {
+       "name": "list charges",
+       "request": {
+        "method": "GET",
+        "url": {
+         "raw": "{{base_url}}/finance/charges?year=2026&month=9&status=unpaid&per_page=15",
+         "host": [
+          "{{base_url}}"
+         ],
+         "path": [
+          "finance",
+          "charges"
+         ],
+         "query": [
+          {
+           "key": "year",
+           "value": "2026"
+          },
+          {
+           "key": "month",
+           "value": "9"
+          },
+          {
+           "key": "status",
+           "value": "unpaid",
+           "description": "unpaid / partially_paid / paid"
+          },
+          {
+           "key": "student_id",
+           "value": ""
+          },
+          {
+           "key": "course_id",
+           "value": ""
+          },
+          {
+           "key": "per_page",
+           "value": "15"
+          }
+         ]
+        }
+       }
+      },
+      {
+       "name": "generate charges (admin)",
+       "request": {
+        "method": "POST",
+        "header": [
+         {
+          "key": "Content-Type",
+          "value": "application/json"
+         }
+        ],
+        "body": {
+         "mode": "raw",
+         "raw": "{\n    \"period_year\": 2026,\n    \"period_month\": 9,\n    \"course_id\": {{course_id}}\n}"
+        },
+        "url": {
+         "raw": "{{base_url}}/finance/charges/generate",
+         "host": [
+          "{{base_url}}"
+         ],
+         "path": [
+          "finance",
+          "charges",
+          "generate"
+         ]
+        },
+        "description": "ولّد فواتير شهر لكل الاشتراكات النشطة (شيل course_id للسنتر كله). النداء المتكرر مش بيبوظ حاجة."
+       }
+      },
+      {
+       "name": "list payments",
+       "request": {
+        "method": "GET",
+        "url": {
+         "raw": "{{base_url}}/finance/payments?course_id={{course_id}}&method=cash&per_page=15",
+         "host": [
+          "{{base_url}}"
+         ],
+         "path": [
+          "finance",
+          "payments"
+         ],
+         "query": [
+          {
+           "key": "course_id",
+           "value": "{{course_id}}"
+          },
+          {
+           "key": "student_id",
+           "value": ""
+          },
+          {
+           "key": "method",
+           "value": "cash",
+           "description": "cash / vodafone_cash / bank_transfer / card / other"
+          },
+          {
+           "key": "status",
+           "value": "",
+           "description": "active / cancelled"
+          },
+          {
+           "key": "year",
+           "value": ""
+          },
+          {
+           "key": "month",
+           "value": ""
+          },
+          {
+           "key": "per_page",
+           "value": "15"
+          }
+         ]
+        }
+       }
+      },
+      {
+       "name": "record payment (partial example)",
+       "request": {
+        "method": "POST",
+        "header": [
+         {
+          "key": "Content-Type",
+          "value": "application/json"
+         }
+        ],
+        "body": {
+         "mode": "raw",
+         "raw": "{\n    \"student_id\": 2,\n    \"course_id\": {{course_id}},\n    \"period_year\": 2026,\n    \"period_month\": 9,\n    \"amount\": 300,\n    \"method\": \"cash\",\n    \"note\": \"First installment\"\n}"
+        },
+        "url": {
+         "raw": "{{base_url}}/finance/payments",
+         "host": [
+          "{{base_url}}"
+         ],
+         "path": [
+          "finance",
+          "payments"
+         ]
+        },
+        "description": "تسجيل دفعة. لو الفاتورة مش موجودة بتتولد تلقائياً. admin/secretary لأي طالب — teacher لكورساته فقط.\nعلم use_credit=true لاستخدام رصيد الطالب المقدم.\nلو المبلغ أكبر من المتبقي → الزيادة بتتحول credit تلقائياً والدفعة تتسجل بكامل قيمتها."
+       }
+      },
+      {
+       "name": "update payment (admin)",
+       "request": {
+        "method": "PUT",
+        "header": [
+         {
+          "key": "Content-Type",
+          "value": "application/json"
+         }
+        ],
+        "body": {
+         "mode": "raw",
+         "raw": "{\n    \"amount\": 500,\n    \"note\": \"Corrected amount\"\n}"
+        },
+        "url": {
+         "raw": "{{base_url}}/finance/payments/1",
+         "host": [
+          "{{base_url}}"
+         ],
+         "path": [
+          "finance",
+          "payments",
+          "1"
+         ]
+        },
+        "description": "تعديل دفعة — الفاتورة بتتحسب من جديد والقديم/الجديد بيتسجلوا في audit log."
+       }
+      },
+      {
+       "name": "cancel payment (admin)",
+       "request": {
+        "method": "POST",
+        "header": [
+         {
+          "key": "Content-Type",
+          "value": "application/json"
+         }
+        ],
+        "body": {
+         "mode": "raw",
+         "raw": "{\n    \"cancellation_reason\": \"Student returned the money\"\n}"
+        },
+        "url": {
+         "raw": "{{base_url}}/finance/payments/1/cancel",
+         "host": [
+          "{{base_url}}"
+         ],
+         "path": [
+          "finance",
+          "payments",
+          "1",
+          "cancel"
+         ]
+        },
+        "description": "إلغاء بلا حذف — السبب إجباري والفاتورة بترجع لحالتها الصحيحة."
+       }
+      },
+      {
+       "name": "overdue students",
+       "request": {
+        "method": "GET",
+        "url": {
+         "raw": "{{base_url}}/finance/overdue?course_id={{course_id}}&year=2026&min_amount=100&per_page=15",
+         "host": [
+          "{{base_url}}"
+         ],
+         "path": [
+          "finance",
+          "overdue"
+         ],
+         "query": [
+          {
+           "key": "course_id",
+           "value": "{{course_id}}"
+          },
+          {
+           "key": "student_id",
+           "value": ""
+          },
+          {
+           "key": "year",
+           "value": "2026"
+          },
+          {
+           "key": "month",
+           "value": ""
+          },
+          {
+           "key": "min_amount",
+           "value": "100",
+           "description": "أقل مبلغ متأخر"
+          },
+          {
+           "key": "status",
+           "value": "",
+           "description": "unpaid / partially_paid"
+          },
+          {
+           "key": "per_page",
+           "value": "15"
+          }
+         ]
+        }
+       }
+      },
+      {
+       "name": "student financial profile",
+       "request": {
+        "method": "GET",
+        "url": {
+         "raw": "{{base_url}}/finance/students/{{student_id}}",
+         "host": [
+          "{{base_url}}"
+         ],
+         "path": [
+          "finance",
+          "students",
+          "{{student_id}}"
+         ]
+        },
+        "description": "Totals + اشتراكاته كورس-بكورس + رصيد الـ credit + تاريخ مدفوعاته (ومن سجلها)."
+       }
+      },
+      {
+       "name": "course financial statistics",
+       "request": {
+        "method": "GET",
+        "url": {
+         "raw": "{{base_url}}/finance/courses/{{course_id}}?year=2026&month=9",
+         "host": [
+          "{{base_url}}"
+         ],
+         "path": [
+          "finance",
+          "courses",
+          "{{course_id}}"
+         ],
+         "query": [
+          {
+           "key": "year",
+           "value": "2026",
+           "description": "اختياري — بدونها = كل الفترات"
+          },
+          {
+           "key": "month",
+           "value": "9",
+           "description": "اختياري"
+          }
+         ]
+        }
+       }
+      },
+      {
+       "name": "financial dashboard",
+       "request": {
+        "method": "GET",
+        "url": {
+         "raw": "{{base_url}}/finance/dashboard?year=2026&month=9",
+         "host": [
+          "{{base_url}}"
+         ],
+         "path": [
+          "finance",
+          "dashboard"
+         ],
+         "query": [
+          {
+           "key": "year",
+           "value": "2026"
+          },
+          {
+           "key": "month",
+           "value": "9"
+          },
+          {
+           "key": "course_id",
+           "value": "",
+           "description": "اختياري"
+          }
+         ]
+        }
+       }
+      },
+      {
+       "name": "report: monthly revenue (year)",
+       "request": {
+        "method": "GET",
+        "url": {
+         "raw": "{{base_url}}/finance/reports/monthly?year=2026",
+         "host": [
+          "{{base_url}}"
+         ],
+         "path": [
+          "finance",
+          "reports",
+          "monthly"
+         ],
+         "query": [
+          {
+           "key": "year",
+           "value": "2026"
+          }
+         ]
+        }
+       }
+      },
+      {
+       "name": "report: collection rate",
+       "request": {
+        "method": "GET",
+        "url": {
+         "raw": "{{base_url}}/finance/reports/collection?year=2026&month=9",
+         "host": [
+          "{{base_url}}"
+         ],
+         "path": [
+          "finance",
+          "reports",
+          "collection"
+         ],
+         "query": [
+          {
+           "key": "year",
+           "value": "2026"
+          },
+          {
+           "key": "month",
+           "value": "9"
+          }
+         ]
+        }
+       }
+      },
+      {
+       "name": "audit logs (admin)",
+       "request": {
+        "method": "GET",
+        "url": {
+         "raw": "{{base_url}}/finance/audit-logs?action=payment_created&per_page=20",
+         "host": [
+          "{{base_url}}"
+         ],
+         "path": [
+          "finance",
+          "audit-logs"
+         ],
+         "query": [
+          {
+           "key": "action",
+           "value": "payment_created",
+           "description": "payment_created / payment_updated / payment_cancelled / subscription_created / subscription_cancelled / discount_updated / fee_changed / credit_used"
+          },
+          {
+           "key": "actor_id",
+           "value": ""
+          },
+          {
+           "key": "per_page",
+           "value": "20"
+          }
+         ]
+        }
+       }
+      },
+      {
+       "name": "payments filters (date + amount range)",
+       "request": {
+        "method": "GET",
+        "url": {
+         "raw": "{{base_url}}/finance/payments?date_from=2026-09-01&date_to=2026-09-30&amount_min=100&amount_max=1000&per_page=15",
+         "host": [
+          "{{base_url}}"
+         ],
+         "path": [
+          "finance",
+          "payments"
+         ],
+         "query": [
+          {
+           "key": "date_from",
+           "value": "2026-09-01"
+          },
+          {
+           "key": "date_to",
+           "value": "2026-09-30"
+          },
+          {
+           "key": "amount_min",
+           "value": "100"
+          },
+          {
+           "key": "amount_max",
+           "value": "1000"
+          },
+          {
+           "key": "per_page",
+           "value": "15"
+          }
+         ]
+        },
+        "description": "فلاتر إضافية على سجل المدفوعات: نطاق تاريخ ونطاق مبلغ."
+       }
+      }
+     ]
+    },
+    {
+     "name": "guardian — parent portal (read-only)",
+     "item": [
+      {
+       "name": "GUARDIAN FLOW (read me)",
+       "request": {
+        "auth": {
+         "type": "noauth"
+        },
+        "method": "GET",
+        "url": {
+         "raw": "https://example.com",
+         "host": [
+          "https",
+          "example",
+          "com"
+         ]
+        },
+        "description": "فلو ولي الأمر كامل:\n1) الطالب يسجل → GET profile → ياخد guardian_code بتاعه\n2) POST guardian/register → ولي الأمر بيكود الطالب → توكن فوري\n3) GET guardian/children → أبناؤه مع ملخص\n4) GET guardian/children/{id} → الملف الكامل (كورسات/حضور/امتحانات/نتايج/مالي)\n5) POST guardian/children → إضافة طفل تاني بكود مختلف (نفس الحساب)\n6) GET guardian/dashboard → ملخص لكل طفل + إشعارات غير مقروءة\n\nالصلاحيات:\n- توكن Guardian على endpoint بتاع users → 401/403\n- توكن User على endpoint بتاع guardian → 401\n- Guardian A يحاول يشوف طفل مش مربوط بيه → 403\n- Guardian Read-Only بالكامل — أي كتابة ممنوعة"
+       }
+      },
+      {
+       "name": "register (self-service)",
+       "request": {
+        "auth": {
+         "type": "noauth"
+        },
+        "method": "POST",
+        "header": [
+         {
+          "key": "Content-Type",
+          "value": "application/json"
+         }
+        ],
+        "body": {
+         "mode": "raw",
+         "raw": "{\n    \"name\": \"Ahmed Mohamed\",\n    \"phone\": \"01012345678\",\n    \"email\": \"father@example.com\",\n    \"password\": \"secret1234\",\n    \"guardian_code\": \"GUARD-XXXX-XXXX\",\n    \"relationship\": \"father\"\n}"
+        },
+        "url": {
+         "raw": "{{base_url}}/guardian/register",
+         "host": [
+          "{{base_url}}"
+         ],
+         "path": [
+          "guardian",
+          "register"
+         ]
+        },
+        "description": "ولي الأمر ينشئ حسابه بنفسه بكود الطالب — الكود بياخده من الطالب (Profile). بيرجع token جاهز."
+       }
+      },
+      {
+       "name": "login",
+       "request": {
+        "auth": {
+         "type": "noauth"
+        },
+        "method": "POST",
+        "header": [
+         {
+          "key": "Content-Type",
+          "value": "application/json"
+         }
+        ],
+        "body": {
+         "mode": "raw",
+         "raw": "{\n    \"phone\": \"01012345678\",\n    \"password\": \"secret1234\"\n}"
+        },
+        "url": {
+         "raw": "{{base_url}}/guardian/login",
+         "host": [
+          "{{base_url}}"
+         ],
+         "path": [
+          "guardian",
+          "login"
+         ]
+        },
+        "description": "الدخول بالموبايل + كلمة السر — محمي بنفس rate limiter بتاع auth."
+       }
+      },
+      {
+       "name": "logout",
+       "request": {
+        "method": "POST",
+        "url": {
+         "raw": "{{base_url}}/guardian/logout",
+         "host": [
+          "{{base_url}}"
+         ],
+         "path": [
+          "guardian",
+          "logout"
+         ]
+        }
+       }
+      },
+      {
+       "name": "my children (summary)",
+       "request": {
+        "method": "GET",
+        "url": {
+         "raw": "{{base_url}}/guardian/children",
+         "host": [
+          "{{base_url}}"
+         ],
+         "path": [
+          "guardian",
+          "children"
+         ]
+        },
+        "description": "لكل طفل: الاسم + صلة القرابة + عدد الكورسات + نسبة الحضور + الإشعارات غير المقروءة."
+       }
+      },
+      {
+       "name": "add another child (by code)",
+       "request": {
+        "method": "POST",
+        "header": [
+         {
+          "key": "Content-Type",
+          "value": "application/json"
+         }
+        ],
+        "body": {
+         "mode": "raw",
+         "raw": "{\n    \"guardian_code\": \"GUARD-YYYY-YYYY\",\n    \"relationship\": \"father\"\n}"
+        },
+        "url": {
+         "raw": "{{base_url}}/guardian/children",
+         "host": [
+          "{{base_url}}"
+         ],
+         "path": [
+          "guardian",
+          "children"
+         ]
+        },
+        "description": "نفس الحساب يضيف طفل تاني بكوده — لو مربوط بالفعل → 409."
+       }
+      },
+      {
+       "name": "child full profile (read-only)",
+       "request": {
+        "method": "GET",
+        "url": {
+         "raw": "{{base_url}}/guardian/children/{{student_id}}",
+         "host": [
+          "{{base_url}}"
+         ],
+         "path": [
+          "guardian",
+          "children",
+          "{{student_id}}"
+         ]
+        },
+        "description": "الكورسات + آخر الحضور + الامتحانات القادمة + آخر النتايج + الوضع المالي. طفل مش بتاعه → 403."
+       }
+      },
+      {
+       "name": "child payments (paginated)",
+       "request": {
+        "method": "GET",
+        "url": {
+         "raw": "{{base_url}}/guardian/children/{{student_id}}/payments?per_page=15",
+         "host": [
+          "{{base_url}}"
+         ],
+         "path": [
+          "guardian",
+          "children",
+          "{{student_id}}",
+          "payments"
+         ],
+         "query": [
+          {
+           "key": "per_page",
+           "value": "15"
+          }
+         ]
+        }
+       }
+      },
+      {
+       "name": "guardian dashboard",
+       "request": {
+        "method": "GET",
+        "url": {
+         "raw": "{{base_url}}/guardian/dashboard",
+         "host": [
+          "{{base_url}}"
+         ],
+         "path": [
+          "guardian",
+          "dashboard"
+         ]
+        },
+        "description": "لكل طفل: كورسات + نسبة حضور + آخر نتيجة + مالي + إشعارات غير مقروءة."
+       }
+      },
+      {
+       "name": "notifications (?unread=&student_id=)",
+       "request": {
+        "method": "GET",
+        "url": {
+         "raw": "{{base_url}}/guardian/notifications?unread=1&student_id={{student_id}}&per_page=15",
+         "host": [
+          "{{base_url}}"
+         ],
+         "path": [
+          "guardian",
+          "notifications"
+         ],
+         "query": [
+          {
+           "key": "unread",
+           "value": "1",
+           "description": "اختياري"
+          },
+          {
+           "key": "student_id",
+           "value": "{{student_id}}",
+           "description": "فلتر بالطفل"
+          },
+          {
+           "key": "per_page",
+           "value": "15"
+          }
+         ]
+        },
+        "description": "كل إشعار فيه student_id — عشان تعرف يخص مين."
+       }
+      },
+      {
+       "name": "mark notification as read",
+       "request": {
+        "method": "PATCH",
+        "url": {
+         "raw": "{{base_url}}/guardian/notifications/1/read",
+         "host": [
+          "{{base_url}}"
+         ],
+         "path": [
+          "guardian",
+          "notifications",
+          "1",
+          "read"
+         ]
+        }
+       }
+      },
+      {
+       "name": "mark all as read",
+       "request": {
+        "method": "PATCH",
+        "url": {
+         "raw": "{{base_url}}/guardian/notifications/read-all",
+         "host": [
+          "{{base_url}}"
+         ],
+         "path": [
+          "guardian",
+          "notifications",
+          "read-all"
+         ]
+        }
+       }
+      },
+      {
+       "name": "child progress",
+       "request": {
+        "method": "GET",
+        "url": {
+         "raw": "{{base_url}}/guardian/children/{{student_id}}/progress?course_id=",
+         "host": [
+          "{{base_url}}"
+         ],
+         "path": [
+          "guardian",
+          "children",
+          "{{student_id}}",
+          "progress"
+         ],
+         "query": [
+          {
+           "key": "course_id",
+           "value": "",
+           "description": "اختياري"
+          }
+         ]
+        },
+        "description": "تقدم الطفل — read-only."
+       }
+      },
+      {
+       "name": "child upcoming lessons",
+       "request": {
+        "method": "GET",
+        "url": {
+         "raw": "{{base_url}}/guardian/children/{{student_id}}/lessons/upcoming?per_page=15",
+         "host": [
+          "{{base_url}}"
+         ],
+         "path": [
+          "guardian",
+          "children",
+          "{{student_id}}",
+          "lessons",
+          "upcoming"
+         ],
+         "query": [
+          {
+           "key": "course_id",
+           "value": ""
+          },
+          {
+           "key": "date_from",
+           "value": ""
+          },
+          {
+           "key": "date_to",
+           "value": ""
+          },
+          {
+           "key": "per_page",
+           "value": "15"
+          }
+         ]
+        },
+        "description": "الدروس القادمة للطفل — read-only."
+       }
+      },
+      {
+       "name": "child attendance (filters)",
+       "request": {
+        "method": "GET",
+        "url": {
+         "raw": "{{base_url}}/guardian/children/{{student_id}}/attendance?status=absent&per_page=15",
+         "host": [
+          "{{base_url}}"
+         ],
+         "path": [
+          "guardian",
+          "children",
+          "{{student_id}}",
+          "attendance"
+         ],
+         "query": [
+          {
+           "key": "status",
+           "value": "absent",
+           "description": "present / absent / late"
+          },
+          {
+           "key": "course_id",
+           "value": ""
+          },
+          {
+           "key": "date_from",
+           "value": ""
+          },
+          {
+           "key": "date_to",
+           "value": ""
+          },
+          {
+           "key": "per_page",
+           "value": "15"
+          }
+         ]
+        },
+        "description": "سجل حضور الطفل مع فلاتر — read-only."
+       }
+      }
+     ]
+    },
+    {
+     "name": "student progress",
+     "item": [
+      {
+       "name": "my progress (student)",
+       "request": {
+        "method": "GET",
+        "url": {
+         "raw": "{{base_url}}/progress?course_id=",
+         "host": [
+          "{{base_url}}"
+         ],
+         "path": [
+          "progress"
+         ],
+         "query": [
+          {
+           "key": "course_id",
+           "value": "",
+           "description": "اختياري — لكورس محدد"
+          }
+         ]
+        },
+        "description": "تقدم الطالب: attendance_percentage + exams (count/average/passed/failed) + overall_progress.\nالمعادلة: overall = متوسط المكوّنات المتاحة (حضور + متوسط امتحانات). لو مفيش بيانات → null بدل رقم مضلل."
+       }
+      },
+      {
+       "name": "my progress per course",
+       "request": {
+        "method": "GET",
+        "url": {
+         "raw": "{{base_url}}/progress",
+         "host": [
+          "{{base_url}}"
+         ],
+         "path": [
+          "progress"
+         ]
+        },
+        "description": "بدون course_id — بيرجع per_course لكل كورس مسجل فيه."
+       }
+      },
+      {
+       "name": "student progress (admin/secretary/teacher-own)",
+       "request": {
+        "method": "GET",
+        "url": {
+         "raw": "{{base_url}}/students/{{student_id}}/progress?course_id=",
+         "host": [
+          "{{base_url}}"
+         ],
+         "path": [
+          "students",
+          "{{student_id}}",
+          "progress"
+         ],
+         "query": [
+          {
+           "key": "course_id",
+           "value": ""
+          }
+         ]
+        },
+        "description": "admin/secretary: أي طالب — teacher: طلاب كورساته فقط (غير كده 403)."
+       }
+      }
+     ]
+    }
+   ]
+  }
+ ]
+}

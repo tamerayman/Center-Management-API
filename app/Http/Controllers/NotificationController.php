@@ -2,17 +2,21 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Notification;
 use App\Http\Resources\NotificationResource;
+use App\Models\Notification;
 use Illuminate\Http\Request;
 
 class NotificationController extends Controller
 {
     public function index(Request $request)
     {
-        $notifications = $request->user()->notifications()->latest()->get();
+        $query = $request->user()->notifications()->latest();
 
-        return NotificationResource::collection($notifications);
+        if ($request->boolean('unread')) {
+            $query->where('is_read', false);
+        }
+
+        return NotificationResource::collection($query->paginate($this->perPage($request)));
     }
 
     public function markAsRead(Notification $notification)
@@ -25,15 +29,15 @@ class NotificationController extends Controller
 
         return new NotificationResource($notification);
     }
+
     public function markAllAsRead(Request $request)
     {
-        $request->user()->notifications()->where('is_read', false)
-            ->update([
-                'is_read' => true,
-            ]);
+        $request->user()->notifications()
+            ->where('is_read', false)
+            ->update(['is_read' => true]);
 
         return response()->json([
-            'message' => 'All notifications marked as read.'
+            'message' => 'All notifications marked as read.',
         ]);
     }
 }

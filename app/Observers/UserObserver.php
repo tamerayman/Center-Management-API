@@ -1,6 +1,7 @@
 <?php
 
 namespace App\Observers;
+
 use App\Models\Profile;
 use App\Models\User;
 
@@ -11,9 +12,14 @@ class UserObserver
      */
     public function created(User $user): void
     {
-         Profile::create([
+        Profile::create([
             'user_id' => $user->id,
         ]);
+
+        // كل طالب جديد بياخد كود ربط ولي أمر فريد (يظهر في البروفايل بتاعه فقط)
+        if ($user->role === 'student') {
+            $user->forceFill(['guardian_code' => User::generateGuardianCode()])->save();
+        }
     }
 
     /**

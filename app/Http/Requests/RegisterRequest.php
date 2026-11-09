@@ -26,7 +26,7 @@ class RegisterRequest extends FormRequest
             'name'=>'required|string|max:255',
             'email'=>'required|string|email|max:255|unique:users,email',
             'password'=>'required|string|min:8|confirmed',
-            'role'=>'required|in:student,teacher'
+            'role'=> 'sometimes|in:student'
         ];
     }
 
@@ -47,8 +47,7 @@ class RegisterRequest extends FormRequest
             'password.string' => 'the password should be string',
             'password.min' => 'the password must be at least 8 characters',
 
-            'role.required' => 'the role is required',
-            'role.in' => 'the role must be either student or teacher',
+            'role.in' => 'Public registration is for students only.',
         ];
     }
 }

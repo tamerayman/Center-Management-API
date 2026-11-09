@@ -14,27 +14,34 @@ class AttendanceResource extends JsonResource
      */
     public function toArray(Request $request): array
     {
-    return [
+        return [
+            'id' => $this->id,
+            'status' => $this->status,
+            'lesson' => $this->whenLoaded('lesson', function () {
+                $lesson = $this->lesson;
 
-    'user' => [
-        'id'    => $this->user->id,
-        'name'  => $this->user->name,
-        'email' => $this->user->email,
-        'role'  => $this->user->role,
-    ],
+                $data = [
+                    'id' => $lesson->id,
+                    'title' => $lesson->title,
+                    'lesson_date' => $lesson->lesson_date,
+                ];
 
-    'phone'         => $this->phone,
-    'bio'           => $this->bio,
-    'date_of_birth' => $this->date_of_birth,
-    'gender'        => $this->gender,
-    'country'       => $this->country,
-    'city'          => $this->city,
+                if ($lesson->relationLoaded('course')) {
+                    $data['course'] = [
+                        'id' => $lesson->course->id,
+                        'title' => $lesson->course->title,
+                    ];
+                }
 
-    'avatar'        => $this->avatar_path,
-
-    'github'        => $this->github_url,
-    'linkedin'      => $this->linkedin_url,
-    'website'       => $this->website_url,
-];
+                return $data;
+            }),
+            'student' => $this->whenLoaded('student', function () {
+                return [
+                    'id' => $this->student->id,
+                    'name' => $this->student->name,
+                ];
+            }),
+            'created_at' => $this->created_at?->toDateTimeString(),
+        ];
     }
 }

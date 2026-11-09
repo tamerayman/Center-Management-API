@@ -4,6 +4,7 @@ namespace App\Http\Requests;
 
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Rule;
 
 class StoreAttendanceRequest extends FormRequest
 {
@@ -16,24 +17,34 @@ class StoreAttendanceRequest extends FormRequest
     }
 
     /**
-     * Get the validation rules that apply to the request.
-     *
      * @return array<string, ValidationRule|array<mixed>|string>
      */
     public function rules(): array
     {
+        $lesson = $this->route('lesson');
+        $courseId = $lesson?->course_id;
+
         return [
-            'students' => ['required', 'array', 'min:1'],
-
-            'students.*.student_id' => [
+            'students'               => ['required', 'array', 'min:1'],
+            'students.*.student_id'  => [
                 'required',
-                'exists:users,id'
+                // يجب أن يكون مستخدماً موجوداً بدور student فقط
+                Rule::exists('users', 'id')->where('role', 'student'),
+                // يجب أن يكون مسجلاً في كورس الدرس هذا
+                Rule::exists('course_student', 'student_id')
+                    ->where('course_id', $courseId),
             ],
-
-            'students.*.status' => [
+            'students.*.status'      => [
                 'required',
-                'in:present,absent,late'
+                'in:present,absent,late',
             ],
+        ];
+    }
+
+    public function messages(): array
+    {
+        return [
+            'students.*.student_id.exists' => 'The student must be a valid enrolled student in this course.',
         ];
     }
 }

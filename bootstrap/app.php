@@ -1,10 +1,15 @@
 <?php
 
+use App\Http\Middleware\AdminMiddleware;
+use App\Http\Middleware\SanitizeMethodOverride;
+use App\Http\Middleware\StudentMiddleware;
+use App\Http\Middleware\TeacherMiddleware;
 use Illuminate\Auth\AuthenticationException;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
 use Illuminate\Http\Request;
+use Symfony\Component\Routing\Exception\RouteNotFoundException;
 
 return Application::configure(basePath: dirname(__DIR__))
     ->withRouting(
@@ -14,11 +19,12 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware): void {
-        $middleware->prepend(\App\Http\Middleware\SanitizeMethodOverride::class);
+        $middleware->prepend(SanitizeMethodOverride::class);
 
         $middleware->alias([
-            'teacher' => App\Http\Middleware\TeacherMiddleware::class,
-            'student' => App\Http\Middleware\StudentMiddleware::class,
+            'teacher' => TeacherMiddleware::class,
+            'student' => StudentMiddleware::class,
+            'admin' => AdminMiddleware::class,
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
@@ -28,7 +34,9 @@ return Application::configure(basePath: dirname(__DIR__))
             ], 401);
         });
 
-        $exceptions->render(function (\Symfony\Component\Routing\Exception\RouteNotFoundException $e, Request $request) {
+        // طلبات API بدون Accept: application/json بتحاول تعمل redirect إلى route('login')
+        // غير الموجودة في تطبيق API — نرجع 401 JSON بدل 500
+        $exceptions->render(function (RouteNotFoundException $e, Request $request) {
             if ($request->is('api/*') || $request->expectsJson()) {
                 return response()->json([
                     'message' => 'Unauthenticated.',

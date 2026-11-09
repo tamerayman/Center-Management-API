@@ -7,6 +7,7 @@ use App\Http\Resources\LessonMaterialResource;
 use App\Models\Lesson;
 use App\Models\LessonMaterial;
 use App\Models\Notification;
+use Illuminate\Filesystem\FilesystemAdapter;
 use Illuminate\Support\Facades\Storage;
 
 class LessonMaterialController extends Controller
@@ -16,181 +17,164 @@ class LessonMaterialController extends Controller
         $this->authorize('create', [LessonMaterial::class, $lesson]);
 
         if ($request->hasFile('file')) {
-
             $file = $request->file('file');
-
             $path = $file->store('lesson-materials', 'public');
 
             $material = LessonMaterial::create([
-                'lesson_id'    => $lesson->id,
-                'title'        => $request->title,
-                'type'         => $this->detectType($file),
-                'path'         => $path,
+                'lesson_id' => $lesson->id,
+                'title' => $request->title,
+                'type' => $this->detectType($file),
+                'path' => $path,
                 'external_url' => null,
-                'mime_type'    => $file->getMimeType(),
-                'file_size'    => $file->getSize(),
-        ]);
-
-        } else {
-
-            $material = LessonMaterial::create([
-                'lesson_id'    => $lesson->id,
-                'title'        => $request->title,
-                'type'         => $this->detectLinkType($request->external_url),
-                'path'         => null,
-                'external_url' => $request->external_url,
-                'mime_type'    => null,
-                'file_size'    => null,
+                'mime_type' => $file->getMimeType(),
+                'file_size' => $file->getSize(),
             ]);
-
+        } else {
+            $material = LessonMaterial::create([
+                'lesson_id' => $lesson->id,
+                'title' => $request->title,
+                'type' => $this->detectLinkType($request->external_url),
+                'path' => null,
+                'external_url' => $request->external_url,
+                'mime_type' => null,
+                'file_size' => null,
+            ]);
         }
-        foreach ($lesson->course->students as $student) {
-    Notification::create([
-        'user_id' => $student->id,
-        'title' => 'New Lesson Material',
-        'message' => "A new material '{$material->title}' has been added to lesson '{$lesson->title}'.",
-    ]);
-}
 
+        $this->notifyCourseStudents($lesson, $material);
 
         return new LessonMaterialResource($material);
     }
 
-    private function detectType($file)
+    private function detectType($file): string
     {
         $extension = strtolower($file->getClientOriginalExtension());
 
         return match ($extension) {
-
             'pdf', 'doc', 'docx' => 'document',
-
             'ppt', 'pptx' => 'presentation',
-
             'zip' => 'archive',
-
             'jpg', 'jpeg', 'png' => 'image',
-
             default => 'document',
         };
     }
 
-    private function detectLinkType($url)
+    private function detectLinkType(string $url): string
     {
-        if (str_contains($url, 'youtube.com') ||str_contains($url, 'youtu.be')) {
+        if (str_contains($url, 'youtube.com') || str_contains($url, 'youtu.be')) {
             return 'youtube';
         }
 
         return 'link';
     }
-//---------------------------------------------------------
 
-    public function index(Lesson $lesson)
-{
-    $this->authorize('viewAny', [LessonMaterial::class, $lesson]);
+    public function index(Request $request, Lesson $lesson)
+    {
+        $this->authorize('viewAny', [LessonMaterial::class, $lesson]);
 
-   $materials = $lesson->materials()->latest()->get();
+        $materials = $lesson->materials()->latest()->paginate($this->perPage($request));
 
-    return LessonMaterialResource::collection($materials);
-}
+        return LessonMaterialResource::collection($materials);
+    }
 
-//-------------------------------------------------------
-public function update(StoreLessonMaterialRequest $request, LessonMaterial $material)
-{
-    $this->authorize('update', $material);
+    public function update(StoreLessonMaterialRequest $request, LessonMaterial $material)
+    {
+        $this->authorize('update', $material);
 
-    // تعديل الملف
-    if ($request->hasFile('file')) {
+        if ($request->hasFile('file')) {
+            if ($material->path) {
+                Storage::disk('public')->delete($material->path);
+            }
+
+            $file = $request->file('file');
+            $path = $file->store('lesson-materials', 'public');
+
+            $material->update([
+                'title' => $request->title ?? $material->title,
+                'type' => $this->detectType($file),
+                'path' => $path,
+                'external_url' => null,
+                'mime_type' => $file->getMimeType(),
+                'file_size' => $file->getSize(),
+            ]);
+        } elseif ($request->filled('external_url')) {
+            if ($material->path) {
+                Storage::disk('public')->delete($material->path);
+            }
+
+            $material->update([
+                'title' => $request->title ?? $material->title,
+                'type' => $this->detectLinkType($request->external_url),
+                'path' => null,
+                'external_url' => $request->external_url,
+                'mime_type' => null,
+                'file_size' => null,
+            ]);
+        } else {
+            $material->update([
+                'title' => $request->title ?? $material->title,
+            ]);
+        }
+
+        return new LessonMaterialResource($material);
+    }
+
+    public function destroy(LessonMaterial $material)
+    {
+        $this->authorize('delete', $material);
 
         if ($material->path) {
             Storage::disk('public')->delete($material->path);
         }
 
-        $file = $request->file('file');
-        $path = $file->store('lesson-materials', 'public');
+        $material->delete();
 
-        $material->update([
-            'title'        => $request->title,
-            'type'         => $this->detectType($file),
-            'path'         => $path,
-            'external_url' => null,
-            'mime_type'    => $file->getMimeType(),
-            'file_size'    => $file->getSize(),
+        return response()->json([
+            'message' => 'Material deleted successfully.',
         ]);
     }
 
-    // التحويل إلى Link
-    elseif ($request->filled('external_url')) {
+    public function download(LessonMaterial $material)
+    {
+        $this->authorize('view', $material);
 
-        if ($material->path) {
-            Storage::disk('public')->delete($material->path);
+        if ($material->external_url) {
+            return response()->json([
+                'url' => $material->external_url,
+            ]);
         }
 
-        $material->update([
-            'title'        => $request->title,
-            'type'         => $this->detectLinkType($request->external_url),
-            'path'         => null,
-            'external_url' => $request->external_url,
-            'mime_type'    => null,
-            'file_size'    => null,
-        ]);
-    }
+        if (! $material->path || ! Storage::disk('public')->exists($material->path)) {
+            return response()->json([
+                'message' => 'Material file not found.',
+            ], 404);
+        }
 
-    // تعديل العنوان فقط
-    else {
-
-        $material->update([
-            'title' => $request->title,
-        ]);
-    }
-
-    return new LessonMaterialResource($material);
-}
-//------------------------------------------------------------
-public function destroy(LessonMaterial $material)
-{
-    $this->authorize('delete', $material);
-
-    if ($material->path) {
-        Storage::disk('public')->delete($material->path);
-    }
-
-    $material->delete();
-
-    return response()->json([
-        'message' => 'Material deleted successfully.'
-    ]);
-}
-
-//-------------------------------------------------
-
-
-
-public function download(LessonMaterial $material)
-{
-    $this->authorize('view', $material);
-
-    // لو المادة Link أو YouTube
-    if ($material->external_url) {
-
-        return response()->json([
-            'url' => $material->external_url,
-        ]);
-    }
-
-    // لو File
-    if (!$material->path || !Storage::disk('public')->exists($material->path)) {
-
-        return response()->json([
-            'message' => 'Material file not found.'
-        ], 404);
-    }
-
-        /** @var \Illuminate\Filesystem\FilesystemAdapter $disk */
+        /** @var FilesystemAdapter $disk */
         $disk = Storage::disk('public');
-//  return Storage::disk('public')->download(   عشان IDE بيعمل خطا
+
         return $disk->download(
             $material->path,
-            $material->title . '.' . pathinfo($material->path, PATHINFO_EXTENSION)
+            $material->title.'.'.pathinfo($material->path, PATHINFO_EXTENSION)
         );
-}
+    }
+
+    private function notifyCourseStudents(Lesson $lesson, LessonMaterial $material): void
+    {
+        $now = now();
+
+        $rows = $lesson->course->students()
+            ->pluck('users.id')
+            ->map(fn ($id) => [
+                'user_id' => $id,
+                'title' => 'New Lesson Material',
+                'message' => "A new material '{$material->title}' has been added to lesson '{$lesson->title}'.",
+                'created_at' => $now,
+                'updated_at' => $now,
+            ]);
+
+        if ($rows->isNotEmpty()) {
+            Notification::insert($rows->all());
+        }
+    }
 }

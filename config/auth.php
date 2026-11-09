@@ -1,5 +1,6 @@
 <?php
 
+use App\Models\Guardian;
 use App\Models\User;
 
 return [
@@ -42,6 +43,12 @@ return [
             'driver' => 'session',
             'provider' => 'users',
         ],
+
+        // ولي الأمر — كيان منفصل عن users بنفس Sanctum tokens (morph)
+        'guardian' => [
+            'driver' => 'sanctum',
+            'provider' => 'guardians',
+        ],
     ],
 
     /*
@@ -65,6 +72,11 @@ return [
         'users' => [
             'driver' => 'eloquent',
             'model' => env('AUTH_MODEL', User::class),
+        ],
+
+        'guardians' => [
+            'driver' => 'eloquent',
+            'model' => Guardian::class,
         ],
 
         // 'users' => [

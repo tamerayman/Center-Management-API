@@ -55,4 +55,33 @@ class StoreQuestionRequest extends FormRequest
             'marks.min' => 'The marks must be at least 1.',
         ];
     }
+
+    public function withValidator($validator): void
+    {
+        $validator->after(function ($validator) {
+            $exam = $this->route('exam');
+            $question = $this->route('question');
+
+            if (! $exam && $question) {
+                $exam = $question->exam;
+            }
+
+            if ($exam && $this->filled('marks')) {
+                $query = $exam->questions();
+                if ($question) {
+                    $query->where('id', '!=', $question->id);
+                }
+                $existingMarks = (int) $query->sum('marks');
+                $newMarks = (int) $this->input('marks');
+
+                if (($existingMarks + $newMarks) > (int) $exam->total_marks) {
+                    $available = max(0, (int) $exam->total_marks - $existingMarks);
+                    $validator->errors()->add(
+                        'marks',
+                        "The total marks of all questions cannot exceed exam total marks ({$exam->total_marks}). Available marks to assign: {$available}."
+                    );
+                }
+            }
+        });
+    }
 }

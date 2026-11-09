@@ -27,23 +27,7 @@ class ProfileController extends Controller
 
             $totalScore = $user->results()->sum('score');
             $totalMarks = $user->results()->sum('total_marks');
-            $attendanceTotal = $user->attendances()->count();
-
-            $attendanceScore = $user->attendances()
-                ->selectRaw("
-        SUM(
-            CASE
-                WHEN status = 'present' THEN 1
-                WHEN status = 'late' THEN 0.5
-                ELSE 0
-            END
-        ) as attendance_score
-    ")
-                ->value('attendance_score') ?? 0;
-
-            $attendanceRate = $attendanceTotal > 0
-                ? round(($attendanceScore / $attendanceTotal) * 100, 2)
-                : 0;
+            $attendanceRate = app(\App\Services\ProgressService::class)->attendancePercentageFor($user) ?? 0;
             $statistics = [
 
                 'courses_count'      => $user->enrolledCourses()->count(),
@@ -120,7 +104,8 @@ class ProfileController extends Controller
     {
         $user = $request->user();
 
-        $user->profile->update($request->validated());
+        $profile = $user->profile ?? $user->profile()->create([]);
+        $profile->update($request->validated());
 
         $profile = $user->profile()->with('user')->first();
 

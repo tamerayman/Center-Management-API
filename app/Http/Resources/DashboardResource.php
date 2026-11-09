@@ -7,7 +7,6 @@ use Illuminate\Http\Resources\Json\JsonResource;
 
 class DashboardResource extends JsonResource
 {
-
     public function toArray(Request $request): array
     {
         return [
@@ -41,6 +40,17 @@ class DashboardResource extends JsonResource
                     );
                 }
             ),
+
+            'upcoming_lessons' => $this->when(
+                isset($this['upcoming_lessons']),
+                fn () => LessonResource::collection($this['upcoming_lessons'])
+            ),
+
+            'progress' => $this->when(isset($this['progress']), fn () => $this['progress']),
+
+            'progress_per_course' => $this->when(isset($this['progress_per_course']), fn () => $this['progress_per_course']),
+
+            'course_insights' => $this->when(isset($this['course_insights']), fn () => $this['course_insights']),
         ];
     }
 }

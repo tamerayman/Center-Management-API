@@ -9,17 +9,16 @@ use Symfony\Component\HttpFoundation\Response;
 class TeacherMiddleware
 {
     /**
-     * Handle an incoming request.
-     *
-     * @param  Closure(Request): (Response)  $next
+     * المحمول للـ teacher فقط — والـ admin له صلاحيات تجاوز في كل مكان.
      */
     public function handle(Request $request, Closure $next): Response
     {
-        if ($request->user()->role !== 'teacher') {
-        return response()->json([
-            'message' => 'Unauthorized'
-        ], 403);
-    }
+        if (! in_array($request->user()->role, ['teacher', 'admin'])) {
+            return response()->json([
+                'message' => 'Only teachers can access this resource.',
+            ], 403);
+        }
+
         return $next($request);
     }
 }
